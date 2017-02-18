@@ -1,0 +1,13 @@
+{
+    "framework": "mocha",
+    "src_files": [
+        "test/*.js"
+    ],
+    "serve_files": [
+        "./dist/neact.js",
+        "browserified.js"
+    ],
+    "before_tests": "browserify -d test/index.js -o browserified.js",
+    "on_exit": "rm browserified.js",
+    "launch_in_dev": ["firefox", "Chrome"]
+}
