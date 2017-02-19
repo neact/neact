@@ -585,10 +585,11 @@ function handleEvent(event, vnode) {
 }
 
 function createListener() {
-    return function handler(e) {
+    function handler(e) {
         e = e || event;
         handleEvent(e, handler.vnode);
-    };
+    }
+    return handler;
 }
 
 function createDOMEvents(vNode) {
@@ -880,8 +881,7 @@ var isUnitlessNumber = {};
 var skipProps = {};
 var dehyphenProps = {
     acceptCharset: 'accept-charset',
-    httpEquiv: 'http-equiv',
-    acceptCharset: 'accept-charset'
+    httpEquiv: 'http-equiv'
 };
 var probablyKebabProps = /^(accentH|arabicF|capH|font[FSVW]|glyph[NO]|horiz[AO]|panose1|renderingI|strikethrough[PT]|underline[PT]|v[AHIM]|vert[AO]|xH|alignmentB|baselineS|clip[PR]|color[IPR]|dominantB|enableB|fill[OR]|flood[COF]|imageR|letterS|lightingC|marker[EMS]|pointerE|shapeR|stop[CO]|stroke[DLMOW]|text[ADR]|unicodeB|wordS|writingM).*/;
 
