@@ -48,10 +48,11 @@ function handleEvent(event, vnode) {
 }
 
 function createListener() {
-    return function handler(e) {
+    function handler(e) {
         e = e || event;
         handleEvent(e, handler.vnode);
     }
+    return handler;
 }
 
 export function createDOMEvents(vNode) {
