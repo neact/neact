@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Neact Table</title>
+    <script src="../../dist/neact.js"></script>
+</head>
+
+<body>
+    <style>
+        .a {
+            border: 1px solid red;
+            background: #FAC5C5
+        }
+        
+        .h {
+            border: 1px solid green;
+            background: #A4F9AC;
+            padding: 3px;
+        }
+        
+        .b {
+            border: 1px solid green;
+            background: #A4F9AC;
+            padding: 3px;
+        }
+        
+        tr {
+            cursor: default
+        }
+        
+        .selected .b {
+            background: #FFCE44;
+        }
+    </style>
+    <div id="demo"></div>
+    <script>
+        var tMap = {};
+        var sNow = function() {
+            return +new Date();
+        }
+        if (!console.time) {
+            console.time = function(a) {
+                tMap[a] = sNow()
+            };
+            console.timeEnd = function(a) {
+                console.log(-tMap[a] + sNow())
+            };
+        }
+    </script>
+    <script src="index.js"></script>
+</body>
+
+</html>

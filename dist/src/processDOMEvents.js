@@ -17,20 +17,21 @@ function ename(s) {
 }
 
 function invokeHandler(handler, vnode, event) {
+    var el = vnode.dom;
     if (typeof handler === "function") {
         // call function handler
-        handler.call(vnode, event, vnode);
+        handler.call(el, event, vnode);
     } else if ((typeof handler === 'undefined' ? 'undefined' : _typeof(handler)) === "object") {
         // call handler with arguments
         if (typeof handler[0] === "function") {
             // special case for single argument for performance
             if (handler.length === 2) {
-                handler[0].call(vnode, handler[1], event, vnode);
+                handler[0].call(el, handler[1], event, vnode);
             } else {
                 var args = handler.slice(1);
                 args.push(event);
                 args.push(vnode);
-                handler[0].apply(vnode, args);
+                handler[0].apply(el, args);
             }
         } else {
             // call multiple handlers
@@ -52,10 +53,11 @@ function handleEvent(event, vnode) {
 }
 
 function createListener() {
-    return function handler(e) {
+    function handler(e) {
         e = e || event;
         handleEvent(e, handler.vnode);
-    };
+    }
+    return handler;
 }
 
 function createDOMEvents(vNode) {
