@@ -219,9 +219,6 @@ function mountComponent(vNode, parentDom, callback, context, isSVG) {
         normalizeComponentChildren(vNode);
         vNode.dom = dom = mount(vNode.children, parentDom, callback, context, isSVG);
 
-        //You may not use the ref attribute on functional components because they don't have instances
-        //attachRef(vNode);
-
         if (!(0, _NeactUtils.isNullOrUndef)(props.onComponentDidMount)) {
             callback.enqueue(function () {
                 return props.onComponentDidMount(vNode);

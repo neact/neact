@@ -237,7 +237,7 @@ var ieVersion = canUseDOM && document && function () {
     return version > 4 ? version : undefined;
 }();
 
-var isIE = !ieVersion;
+var isIE = canUseDOM && !ieVersion;
 
 var NeactCurrentOwner = {
     current: null
@@ -1328,9 +1328,6 @@ function mountComponent(vNode, parentDom, callback, context, isSVG) {
         vNode.children = type(props, context);
         normalizeComponentChildren(vNode);
         vNode.dom = dom = mount(vNode.children, parentDom, callback, context, isSVG);
-
-        //You may not use the ref attribute on functional components because they don't have instances
-        //attachRef(vNode);
 
         if (!isNullOrUndef(props.onComponentDidMount)) {
             callback.enqueue(function () {

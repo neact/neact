@@ -16,4 +16,4 @@ export var ieVersion = canUseDOM && document && (function() {
     return version > 4 ? version : undefined;
 }());
 
-export var isIE = !ieVersion;
+export var isIE = canUseDOM && !ieVersion;
