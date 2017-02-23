@@ -158,57 +158,55 @@ function mountComponent(vNode, parentDom, callback, context, isSVG) {
         children = void 0;
 
     if (isClass) {
-        (function () {
-            var inst = (0, _createNeactComponent2['default'])(vNode, context, isSVG);
-            vNode._instance = inst;
+        var inst = (0, _createNeactComponent2['default'])(vNode, context, isSVG);
+        vNode._instance = inst;
 
-            inst._pendingSetState = true;
+        inst._pendingSetState = true;
 
-            if (inst.componentWillMount) {
-                inst.componentWillMount();
-                if (inst._pendingStateQueue) {
-                    inst.state = inst._processPendingState(inst.props, inst.context);
-                }
+        if (inst.componentWillMount) {
+            inst.componentWillMount();
+            if (inst._pendingStateQueue) {
+                inst.state = inst._processPendingState(inst.props, inst.context);
             }
+        }
 
-            inst._ignoreSetState = true;
-            _NeactCurrentOwner2['default'].current = inst;
-            vNode.children = inst.render();
-            _NeactCurrentOwner2['default'].current = null;
-            inst._ignoreSetState = false;
-            normalizeComponentChildren(vNode);
-            inst._vNode = vNode;
-            inst._renderedVNode = vNode.children;
-            inst._pendingSetState = false;
+        inst._ignoreSetState = true;
+        _NeactCurrentOwner2['default'].current = inst;
+        vNode.children = inst.render();
+        _NeactCurrentOwner2['default'].current = null;
+        inst._ignoreSetState = false;
+        normalizeComponentChildren(vNode);
+        inst._vNode = vNode;
+        inst._renderedVNode = vNode.children;
+        inst._pendingSetState = false;
 
-            vNode.dom = dom = mount(vNode.children, parentDom, callback, inst._childContext, isSVG);
+        vNode.dom = dom = mount(vNode.children, parentDom, callback, inst._childContext, isSVG);
 
-            inst._callbacks = new _CallbackQueue2['default']();
+        inst._callbacks = new _CallbackQueue2['default']();
 
-            if (!(0, _NeactUtils.isNull)(vNode.ref)) {
-                callback.enqueue(function () {
-                    return (0, _NeactRefs.attachRef)(vNode);
-                });
-            }
+        if (!(0, _NeactUtils.isNull)(vNode.ref)) {
+            callback.enqueue(function () {
+                return (0, _NeactRefs.attachRef)(vNode);
+            });
+        }
 
-            if (inst.componentDidMount) {
-                callback.enqueue(function () {
-                    return inst.componentDidMount();
-                });
-            }
+        if (inst.componentDidMount) {
+            callback.enqueue(function () {
+                return inst.componentDidMount();
+            });
+        }
 
-            if (!(0, _NeactUtils.isNullOrUndef)(hooks.create)) {
-                callback.enqueue(function () {
-                    return hooks.create(vNode);
-                });
-            }
+        if (!(0, _NeactUtils.isNullOrUndef)(hooks.create)) {
+            callback.enqueue(function () {
+                return hooks.create(vNode);
+            });
+        }
 
-            if (inst._pendingCallbacks) {
-                callback.enqueue(function () {
-                    return inst._processPendingCallbacks();
-                });
-            }
-        })();
+        if (inst._pendingCallbacks) {
+            callback.enqueue(function () {
+                return inst._processPendingCallbacks();
+            });
+        }
     } else {
         //Function Component
         if (!(0, _NeactUtils.isNullOrUndef)(props.onComponentWillMount)) {

@@ -1717,7 +1717,7 @@ function render(vNode, parentDom) {
 function unmountComponentAtNode(dom) {
     if (dom.__NeactRootNode) {
         unmount(dom.__NeactRootNode, dom);
-        delete dom.__NeactInstance;
+        delete dom.__NeactRootNode;
     }
 }
 

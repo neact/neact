@@ -243,108 +243,106 @@ function patchComponent(lastVNode, nextVNode, parentDom, callback, context, isSV
     var hooks = nextVNode.hooks || {};
 
     if (isClass) {
-        (function () {
-            var inst = lastVNode._instance;
-            var lastChildren = lastVNode.children;
-            var lastProps = inst.props;
-            var lastState = inst.state;
-            var lastContext = inst.context;
-            var nextChildren = void 0,
-                shouldUpdate = false,
-                childContext = inst.getChildContext();
-
-            nextVNode.dom = lastVNode.dom;
-            nextVNode.children = lastChildren;
-            nextVNode._instance = inst;
-            inst._isSVG = isSVG;
-
-            if (!(0, _NeactUtils.isNullOrUndef)(childContext)) {
-                childContext = (0, _NeactUtils.assign)({}, context, childContext);
-            } else {
-                childContext = context;
-            }
-
-            nextChildren = inst._updateComponent(lastProps, nextProps, context);
-
-            if (nextChildren !== _NeactUtils.emptyObject) {
-                nextVNode.children = nextChildren;
-                (0, _NeactMount.normalizeComponentChildren)(nextVNode);
-                nextChildren = nextVNode.children;
-                shouldUpdate = true;
-            }
-
-            inst._childContext = childContext;
-            inst._vNode = nextVNode;
-            inst._renderedVNode = nextChildren;
-
-            if (shouldUpdate) {
-
-                if (hooks.beforeUpdate) {
-                    hooks.beforeUpdate(lastVNode, nextVNode);
-                }
-
-                var refsChanged = (0, _NeactRefs.shouldUpdateRefs)(lastVNode, nextVNode);
-                if (refsChanged) {
-                    (0, _NeactRefs.detachRef)(lastVNode);
-                }
-
-                patch(lastChildren, nextChildren, parentDom, callback, childContext, isSVG);
-                nextVNode.dom = nextChildren.dom;
-
-                if (!(0, _NeactUtils.isNull)(nextVNode.ref)) {
-                    callback.enqueue(function () {
-                        return (0, _NeactRefs.attachRef)(nextVNode);
-                    });
-                }
-
-                if (inst.componentDidUpdate) {
-                    callback.enqueue(function () {
-                        return inst.componentDidUpdate(lastProps, lastState, lastContext, nextVNode.dom);
-                    });
-                }
-
-                if (!(0, _NeactUtils.isNullOrUndef)(hooks.update)) {
-                    callback.enqueue(function () {
-                        return hooks.update(nextVNode);
-                    });
-                }
-            }
-
-            if (inst._pendingCallbacks) {
-                callback.enqueue(function () {
-                    return inst._processPendingCallbacks();
-                });
-            }
-        })();
-    } else {
-        var shouldUpdate = true;
-        var lastProps = lastVNode.props;
+        var inst = lastVNode._instance;
         var lastChildren = lastVNode.children;
-        var nextChildren = lastChildren;
+        var lastProps = inst.props;
+        var lastState = inst.state;
+        var lastContext = inst.context;
+        var nextChildren = void 0,
+            shouldUpdate = false,
+            childContext = inst.getChildContext();
 
         nextVNode.dom = lastVNode.dom;
-        nextVNode.children = nextChildren;
+        nextVNode.children = lastChildren;
+        nextVNode._instance = inst;
+        inst._isSVG = isSVG;
 
-        if (!(0, _NeactUtils.isNullOrUndef)(nextProps.onComponentShouldUpdate)) {
-            shouldUpdate = nextProps.onComponentShouldUpdate(lastProps, nextProps, context);
+        if (!(0, _NeactUtils.isNullOrUndef)(childContext)) {
+            childContext = (0, _NeactUtils.assign)({}, context, childContext);
+        } else {
+            childContext = context;
         }
 
-        if (shouldUpdate !== false) {
-            if (!(0, _NeactUtils.isNullOrUndef)(nextProps.onComponentWillUpdate)) {
-                nextProps.onComponentWillUpdate(lastProps, nextProps, vNode);
-            }
-            nextVNode.children = nextType(nextProps, context);
+        nextChildren = inst._updateComponent(lastProps, nextProps, context);
 
+        if (nextChildren !== _NeactUtils.emptyObject) {
+            nextVNode.children = nextChildren;
             (0, _NeactMount.normalizeComponentChildren)(nextVNode);
-
             nextChildren = nextVNode.children;
+            shouldUpdate = true;
+        }
+
+        inst._childContext = childContext;
+        inst._vNode = nextVNode;
+        inst._renderedVNode = nextChildren;
+
+        if (shouldUpdate) {
 
             if (hooks.beforeUpdate) {
                 hooks.beforeUpdate(lastVNode, nextVNode);
             }
 
-            patch(lastChildren, nextChildren, parentDom, callback, context, isSVG);
+            var refsChanged = (0, _NeactRefs.shouldUpdateRefs)(lastVNode, nextVNode);
+            if (refsChanged) {
+                (0, _NeactRefs.detachRef)(lastVNode);
+            }
+
+            patch(lastChildren, nextChildren, parentDom, callback, childContext, isSVG);
             nextVNode.dom = nextChildren.dom;
+
+            if (!(0, _NeactUtils.isNull)(nextVNode.ref)) {
+                callback.enqueue(function () {
+                    return (0, _NeactRefs.attachRef)(nextVNode);
+                });
+            }
+
+            if (inst.componentDidUpdate) {
+                callback.enqueue(function () {
+                    return inst.componentDidUpdate(lastProps, lastState, lastContext, nextVNode.dom);
+                });
+            }
+
+            if (!(0, _NeactUtils.isNullOrUndef)(hooks.update)) {
+                callback.enqueue(function () {
+                    return hooks.update(nextVNode);
+                });
+            }
+        }
+
+        if (inst._pendingCallbacks) {
+            callback.enqueue(function () {
+                return inst._processPendingCallbacks();
+            });
+        }
+    } else {
+        var _shouldUpdate = true;
+        var _lastProps = lastVNode.props;
+        var _lastChildren = lastVNode.children;
+        var _nextChildren = _lastChildren;
+
+        nextVNode.dom = lastVNode.dom;
+        nextVNode.children = _nextChildren;
+
+        if (!(0, _NeactUtils.isNullOrUndef)(nextProps.onComponentShouldUpdate)) {
+            _shouldUpdate = nextProps.onComponentShouldUpdate(_lastProps, nextProps, context);
+        }
+
+        if (_shouldUpdate !== false) {
+            if (!(0, _NeactUtils.isNullOrUndef)(nextProps.onComponentWillUpdate)) {
+                nextProps.onComponentWillUpdate(_lastProps, nextProps, vNode);
+            }
+            nextVNode.children = nextType(nextProps, context);
+
+            (0, _NeactMount.normalizeComponentChildren)(nextVNode);
+
+            _nextChildren = nextVNode.children;
+
+            if (hooks.beforeUpdate) {
+                hooks.beforeUpdate(lastVNode, nextVNode);
+            }
+
+            patch(_lastChildren, _nextChildren, parentDom, callback, context, isSVG);
+            nextVNode.dom = _nextChildren.dom;
 
             if (!(0, _NeactUtils.isNullOrUndef)(nextProps.onComponentDidUpdate)) {
                 callback.enqueue(function () {
