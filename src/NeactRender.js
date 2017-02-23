@@ -75,7 +75,7 @@ export function render(vNode, parentDom) {
 export function unmountComponentAtNode(dom) {
     if (dom.__NeactRootNode) {
         unmount(dom.__NeactRootNode, dom);
-        delete dom.__NeactInstance;
+        delete dom.__NeactRootNode;
     }
 }
 
