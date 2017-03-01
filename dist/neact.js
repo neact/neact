@@ -1,7 +1,8 @@
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.Neact = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-'use strict';
-
-exports.__esModule = true;
+(function (global, factory) {
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
+	typeof define === 'function' && define.amd ? define(['exports'], factory) :
+	(factory((global.Neact = global.Neact || {})));
+}(this, (function (exports) { 'use strict';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
@@ -88,6 +89,8 @@ function throwError(message) {
 function warning(message) {
     console && console.warn(message);
 }
+
+
 
 function inherits(cls, base, proto) {
     var clsProto = cls.prototype;
@@ -227,6 +230,8 @@ function assign(target) {
 
 var canUseDOM = !!(typeof window !== 'undefined' && window.document && window.document.createElement);
 
+
+
 var ieVersion = canUseDOM && document && function () {
     var version = 3,
         div = document.createElement('div'),
@@ -350,9 +355,13 @@ function createVoidVNode() {
 
 var emptyVNode = createVoidVNode();
 
+
+
 function createTextVNode(text) {
     return createVNode('#text', null, text, null, null, null, null, false, null, true);
 }
+
+
 
 function createElement(type, config) {
     if (isInvalid(type) || isObject(type)) {
@@ -545,6 +554,8 @@ function attachRef(vNode) {
     }
 }
 
+var _typeof$2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 function ename(s) {
     return s.replace('on', '');
 }
@@ -554,7 +565,7 @@ function invokeHandler(handler, vnode, event) {
     if (typeof handler === "function") {
         // call function handler
         handler.call(el, event, vnode);
-    } else if ((typeof handler === 'undefined' ? 'undefined' : _typeof(handler)) === "object") {
+    } else if ((typeof handler === 'undefined' ? 'undefined' : _typeof$2(handler)) === "object") {
         // call handler with arguments
         if (typeof handler[0] === "function") {
             // special case for single argument for performance
@@ -797,6 +808,8 @@ function setTextContent(node, text) {
         }
     }
 }
+
+
 
 function replaceWithNewNode(lastNode, nextNode, parentDom, callback, context, isSVG) {
     unmount(lastNode, null);
@@ -1153,6 +1166,8 @@ function updateDOMProperty(lastProps, nextProps, isSVG, vNode) {
     }
 }
 
+var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 function mount(vNode, parentDom, callback, context, isSVG) {
     var isUndefCallbacks = isNullOrUndef(callback);
     var r = void 0;
@@ -1167,7 +1182,7 @@ function mount(vNode, parentDom, callback, context, isSVG) {
     } else if (isVoidVNode(vNode)) {
         r = mountVoid(vNode, parentDom);
     } else {
-        throwError('mount() expects a valid VNode, instead it received an object with the type "' + (typeof vNode === 'undefined' ? 'undefined' : _typeof(vNode)) + '".');
+        throwError('mount() expects a valid VNode, instead it received an object with the type "' + (typeof vNode === 'undefined' ? 'undefined' : _typeof$1(vNode)) + '".');
     }
 
     if (isUndefCallbacks) {
@@ -1757,6 +1772,8 @@ function findDOMNode(vNode) {
     return null;
 }
 
+var _typeof$4 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 var hasOwnProperty$1 = Object.prototype.hasOwnProperty;
 var nativeKeys = Object.keys;
 
@@ -1799,7 +1816,7 @@ function shallowEqual(objA, objB) {
         return true;
     }
 
-    if ((typeof objA === 'undefined' ? 'undefined' : _typeof(objA)) !== 'object' || objA === null || (typeof objB === 'undefined' ? 'undefined' : _typeof(objB)) !== 'object' || objB === null) {
+    if ((typeof objA === 'undefined' ? 'undefined' : _typeof$4(objA)) !== 'object' || objA === null || (typeof objB === 'undefined' ? 'undefined' : _typeof$4(objB)) !== 'object' || objB === null) {
         return false;
     }
 
@@ -2067,6 +2084,8 @@ assign(NeactComponent.prototype, {
     }
 });
 
+var _typeof$3 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 function createClass(spec) {
     function Constructor(props, context) {
         this.state = {};
@@ -2081,7 +2100,7 @@ function createClass(spec) {
 
         var initialState = this.getInitialState ? this.getInitialState(this.props, this.context) : null;
 
-        if (!((typeof initialState === 'undefined' ? 'undefined' : _typeof(initialState)) === 'object' && !isArray(initialState))) {
+        if (!((typeof initialState === 'undefined' ? 'undefined' : _typeof$3(initialState)) === 'object' && !isArray(initialState))) {
             new TypeError('getInitialState(): must return an object or null');
         }
 
@@ -2167,5 +2186,5 @@ exports.Component = NeactComponent;
 exports.PureComponent = NeactPureComponent;
 exports.utils = utils;
 
-},{}]},{},[1])(1)
-});
+})));
+//# sourceMappingURL=neact.js.map
