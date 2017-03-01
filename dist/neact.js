@@ -1,7 +1,8 @@
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.Neact = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-'use strict';
-
-exports.__esModule = true;
+(function (global, factory) {
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
+	typeof define === 'function' && define.amd ? define(['exports'], factory) :
+	(factory((global.Neact = global.Neact || {})));
+}(this, (function (exports) { 'use strict';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
@@ -22,8 +23,28 @@ function toArray(obj) {
     return isArray(obj) ? obj : [obj];
 }
 
+function isUndefined(obj) {
+    return obj === undefined;
+}
+
 function isStatefulComponent(o) {
     return !isUndefined(o.prototype) && !isUndefined(o.prototype.render);
+}
+
+function isString(obj) {
+    return typeof obj === 'string';
+}
+
+function isNumber(obj) {
+    return typeof obj === 'number';
+}
+
+function isTrue(obj) {
+    return obj === true;
+}
+
+function isNull(obj) {
+    return obj === null;
 }
 
 function isStringOrNumber(obj) {
@@ -46,26 +67,6 @@ function isAttrAnEvent(attr) {
     return attr[0] === 'o' && attr[1] === 'n' && attr.length > 3;
 }
 
-function isString(obj) {
-    return typeof obj === 'string';
-}
-
-function isNumber(obj) {
-    return typeof obj === 'number';
-}
-
-function isNull(obj) {
-    return obj === null;
-}
-
-function isTrue(obj) {
-    return obj === true;
-}
-
-function isUndefined(obj) {
-    return obj === undefined;
-}
-
 function isDefined(obj) {
     return obj !== undefined;
 }
@@ -85,13 +86,15 @@ function throwError(message) {
     throw new Error('Neact Error: ' + message);
 }
 
-function warning(message) {
-    console && console.warn(message);
+function warning(msg) {
+    if (console) {
+        console.warn(msg);
+    }
 }
 
-function inherits(cls, base, proto) {
-    var clsProto = cls.prototype;
 
+
+function inherits(cls, base, proto) {
     function F() {}
     F.prototype = base.prototype;
     cls.prototype = new F();
@@ -227,6 +230,8 @@ function assign(target) {
 
 var canUseDOM = !!(typeof window !== 'undefined' && window.document && window.document.createElement);
 
+
+
 var ieVersion = canUseDOM && document && function () {
     var version = 3,
         div = document.createElement('div'),
@@ -248,7 +253,9 @@ function normalizeVNodes(nodes, parentVNode) {
 
     for (var i = 0; i < nodes.length; i++) {
         var n = nodes[i];
-        if (isInvalid(n)) continue;
+        if (isInvalid(n)) {
+            continue;
+        }
         if (isStringOrNumber(n)) {
             n = createTextVNode(n);
         }
@@ -350,9 +357,13 @@ function createVoidVNode() {
 
 var emptyVNode = createVoidVNode();
 
+
+
 function createTextVNode(text) {
     return createVNode('#text', null, text, null, null, null, null, false, null, true);
 }
+
+
 
 function createElement(type, config) {
     if (isInvalid(type) || isObject(type)) {
@@ -554,7 +565,7 @@ function invokeHandler(handler, vnode, event) {
     if (typeof handler === "function") {
         // call function handler
         handler.call(el, event, vnode);
-    } else if ((typeof handler === 'undefined' ? 'undefined' : _typeof(handler)) === "object") {
+    } else if (isObject(handler)) {
         // call handler with arguments
         if (typeof handler[0] === "function") {
             // special case for single argument for performance
@@ -656,26 +667,23 @@ function destroyDOMEvents(vNode) {
     updateDOMEvents(vNode, emptyVNode);
 }
 
-function unmount(vNode, parentDom, callback) {
-    var isUndefCallbacks = isNullOrUndef(callback);
-    callback = callback || new CallbackQueue();
-
-    if (isElementVNode(vNode)) {
-        unmountElement(vNode, parentDom, callback);
-    } else if (isVoidVNode(vNode) || isTextVNode(vNode)) {
-        unmountVoidOrText(vNode, parentDom);
-    } else if (isComponentVNode(vNode)) {
-        unmountComponent(vNode, parentDom, callback);
-    }
-
-    if (isUndefCallbacks) {
-        callback.notifyAll();
-    }
-}
-
 function unmountVoidOrText(vNode, parentDom) {
     if (parentDom) {
         removeChild(parentDom, vNode.dom);
+    }
+}
+
+function unmountChildren(children, callback) {
+    if (isArray(children)) {
+        for (var i = 0; i < children.length; i++) {
+            var child = children[i];
+
+            if (!isInvalid(child) && isVNode(child)) {
+                unmount(child, null, callback);
+            }
+        }
+    } else if (isVNode(children)) {
+        unmount(children, null, callback);
     }
 }
 
@@ -701,20 +709,6 @@ function unmountElement(vNode, parentDom, callback) {
 
     if (hooks.destroy) {
         hooks.destroy(vNode);
-    }
-}
-
-function unmountChildren(children, callback) {
-    if (isArray(children)) {
-        for (var i = 0; i < children.length; i++) {
-            var child = children[i];
-
-            if (!isInvalid(child) && isVNode(child)) {
-                unmount(child, null, callback);
-            }
-        }
-    } else if (isVNode(children)) {
-        unmount(children, null, callback);
     }
 }
 
@@ -760,6 +754,23 @@ function unmountComponent(vNode, parentDom, callback) {
     }
 }
 
+function unmount(vNode, parentDom, callback) {
+    var isUndefCallbacks = isNullOrUndef(callback);
+    callback = callback || new CallbackQueue();
+
+    if (isElementVNode(vNode)) {
+        unmountElement(vNode, parentDom, callback);
+    } else if (isVoidVNode(vNode) || isTextVNode(vNode)) {
+        unmountVoidOrText(vNode, parentDom);
+    } else if (isComponentVNode(vNode)) {
+        unmountComponent(vNode, parentDom, callback);
+    }
+
+    if (isUndefCallbacks) {
+        callback.notifyAll();
+    }
+}
+
 var svgNS = 'http://www.w3.org/2000/svg';
 
 function appendChild(parentDom, dom) {
@@ -798,6 +809,8 @@ function setTextContent(node, text) {
     }
 }
 
+
+
 function replaceWithNewNode(lastNode, nextNode, parentDom, callback, context, isSVG) {
     unmount(lastNode, null);
     var dom = mount(nextNode, null, callback, context, isSVG);
@@ -814,14 +827,18 @@ function replaceChild(parentDom, nextDom, lastDom) {
 }
 
 function addEventListener(node, name, fn) {
-    if (typeof node.addEventListener == "function") node.addEventListener(name, fn, false);else if (typeof node.attachEvent != "undefined") {
+    if (typeof node.addEventListener == "function") {
+        node.addEventListener(name, fn, false);
+    } else if (typeof node.attachEvent != "undefined") {
         var attachEventName = "on" + name;
         node.attachEvent(attachEventName, fn);
     }
 }
 
 function removeEventListener(node, name, fn) {
-    if (typeof node.removeEventListener == "function") node.removeEventListener(name, fn, false);else if (typeof node.detachEvent != "undefined") {
+    if (typeof node.removeEventListener == "function") {
+        node.removeEventListener(name, fn, false);
+    } else if (typeof node.detachEvent != "undefined") {
         var attachEventName = "on" + name;
         node.detachEvent(attachEventName, fn);
     }
@@ -991,7 +1008,9 @@ function setNextFrame(obj, prop, val) {
 }
 
 var processDOMStyle = function (lastValue, nextValue, prop, isSVG, dom, vNode) {
-    if (lastValue === nextValue) return;
+    if (lastValue === nextValue) {
+        return;
+    }
     if (isString(nextValue)) {
         dom.style.cssText = nextValue;
         return;
@@ -1004,7 +1023,9 @@ var processDOMStyle = function (lastValue, nextValue, prop, isSVG, dom, vNode) {
         oldStyle = lastValue,
         style = nextValue;
 
-    if (!oldStyle && !style) return;
+    if (!oldStyle && !style) {
+        return;
+    }
     oldStyle = oldStyle || emptyObject;
     style = style || emptyObject;
     var oldHasDel = 'delayed' in oldStyle;
@@ -1059,7 +1080,9 @@ function dangerousStyleValue(name, value) {
 }
 
 var processDOMAttr = function (lastValue, nextValue, prop, isSVG, dom, vNode) {
-    if (lastValue === nextValue) return;
+    if (lastValue === nextValue) {
+        return;
+    }
     if (skipProps[prop]) {
         return;
     }
@@ -1153,6 +1176,8 @@ function updateDOMProperty(lastProps, nextProps, isSVG, vNode) {
     }
 }
 
+var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 function mount(vNode, parentDom, callback, context, isSVG) {
     var isUndefCallbacks = isNullOrUndef(callback);
     var r = void 0;
@@ -1167,7 +1192,7 @@ function mount(vNode, parentDom, callback, context, isSVG) {
     } else if (isVoidVNode(vNode)) {
         r = mountVoid(vNode, parentDom);
     } else {
-        throwError('mount() expects a valid VNode, instead it received an object with the type "' + (typeof vNode === 'undefined' ? 'undefined' : _typeof(vNode)) + '".');
+        throwError('mount() expects a valid VNode, instead it received an object with the type "' + (typeof vNode === 'undefined' ? 'undefined' : _typeof$1(vNode)) + '".');
     }
 
     if (isUndefCallbacks) {
@@ -1693,7 +1718,7 @@ function patchComponent(lastVNode, nextVNode, parentDom, callback, context, isSV
 function _patch(lastVNode, nextVNode) {
     if (!isInvalid(lastVNode)) {
         if (isDOM(lastVNode)) {
-            render(nextVNode, vNode);
+            render(nextVNode, lastVNode);
         } else if (isVNode(lastVNode) && isVNode(nextVNode)) {
             if (lastVNode.dom) {
                 patch(lastVNode, nextVNode);
@@ -1761,7 +1786,9 @@ var hasOwnProperty$1 = Object.prototype.hasOwnProperty;
 var nativeKeys = Object.keys;
 
 function keys(obj) {
-    if (nativeKeys) return nativeKeys(obj);
+    if (nativeKeys) {
+        return nativeKeys(obj);
+    }
 
     var keys = [];
 
@@ -1799,7 +1826,7 @@ function shallowEqual(objA, objB) {
         return true;
     }
 
-    if ((typeof objA === 'undefined' ? 'undefined' : _typeof(objA)) !== 'object' || objA === null || (typeof objB === 'undefined' ? 'undefined' : _typeof(objB)) !== 'object' || objB === null) {
+    if (!isObject(objA) || objA === null || !isObject(objB) || objB === null) {
         return false;
     }
 
@@ -1960,7 +1987,7 @@ assign(NeactComponent.prototype, {
         this._pendingReplaceState = true;
         this.setState(newState, callback);
     },
-    setStateSync: function () {
+    setStateSync: function (newState, callback) {
         if (this._unmounted) {
             return;
         }
@@ -2081,7 +2108,7 @@ function createClass(spec) {
 
         var initialState = this.getInitialState ? this.getInitialState(this.props, this.context) : null;
 
-        if (!((typeof initialState === 'undefined' ? 'undefined' : _typeof(initialState)) === 'object' && !isArray(initialState))) {
+        if (!(isObject(initialState) && !isArray(initialState))) {
             new TypeError('getInitialState(): must return an object or null');
         }
 
@@ -2167,5 +2194,5 @@ exports.Component = NeactComponent;
 exports.PureComponent = NeactPureComponent;
 exports.utils = utils;
 
-},{}]},{},[1])(1)
-});
+})));
+//# sourceMappingURL=neact.js.map

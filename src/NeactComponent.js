@@ -163,7 +163,7 @@ assign(NeactComponent.prototype, {
         this.setState(newState, callback);
     },
 
-    setStateSync() {
+    setStateSync(newState, callback) {
         if (this._unmounted) {
             return;
         }

@@ -60,18 +60,18 @@ export function replaceChild(parentDom, nextDom, lastDom) {
 }
 
 export function addEventListener(node, name, fn) {
-    if (typeof node.addEventListener == "function")
+    if (typeof node.addEventListener == "function") {
         node.addEventListener(name, fn, false);
-    else if (typeof node.attachEvent != "undefined") {
+    } else if (typeof node.attachEvent != "undefined") {
         var attachEventName = "on" + name;
         node.attachEvent(attachEventName, fn);
     }
 }
 
 export function removeEventListener(node, name, fn) {
-    if (typeof node.removeEventListener == "function")
+    if (typeof node.removeEventListener == "function") {
         node.removeEventListener(name, fn, false);
-    else if (typeof node.detachEvent != "undefined") {
+    } else if (typeof node.detachEvent != "undefined") {
         var attachEventName = "on" + name;
         node.detachEvent(attachEventName, fn);
     }

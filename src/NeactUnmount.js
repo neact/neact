@@ -30,26 +30,23 @@ import {
 
 import CallbackQueue from './CallbackQueue';
 
-export function unmount(vNode, parentDom, callback) {
-    var isUndefCallbacks = isNullOrUndef(callback);
-    callback = callback || new CallbackQueue();
-
-    if (isElementVNode(vNode)) {
-        unmountElement(vNode, parentDom, callback);
-    } else if (isVoidVNode(vNode) || isTextVNode(vNode)) {
-        unmountVoidOrText(vNode, parentDom);
-    } else if (isComponentVNode(vNode)) {
-        unmountComponent(vNode, parentDom, callback);
-    }
-
-    if (isUndefCallbacks) {
-        callback.notifyAll();
-    }
-}
-
 function unmountVoidOrText(vNode, parentDom) {
     if (parentDom) {
         removeChild(parentDom, vNode.dom);
+    }
+}
+
+function unmountChildren(children, callback) {
+    if (isArray(children)) {
+        for (let i = 0; i < children.length; i++) {
+            const child = children[i];
+
+            if (!isInvalid(child) && isVNode(child)) {
+                unmount(child, null, callback);
+            }
+        }
+    } else if (isVNode(children)) {
+        unmount(children, null, callback);
     }
 }
 
@@ -76,20 +73,7 @@ export function unmountElement(vNode, parentDom, callback) {
     if (hooks.destroy) {
         hooks.destroy(vNode);
     }
-}
 
-function unmountChildren(children, callback) {
-    if (isArray(children)) {
-        for (let i = 0; i < children.length; i++) {
-            const child = children[i];
-
-            if (!isInvalid(child) && isVNode(child)) {
-                unmount(child, null, callback, );
-            }
-        }
-    } else if (isVNode(children)) {
-        unmount(children, null, callback);
-    }
 }
 
 export function unmountComponent(vNode, parentDom, callback) {
@@ -131,5 +115,22 @@ export function unmountComponent(vNode, parentDom, callback) {
 
     if (hooks.destroy) {
         hooks.destroy(vNode);
+    }
+}
+
+export function unmount(vNode, parentDom, callback) {
+    var isUndefCallbacks = isNullOrUndef(callback);
+    callback = callback || new CallbackQueue();
+
+    if (isElementVNode(vNode)) {
+        unmountElement(vNode, parentDom, callback);
+    } else if (isVoidVNode(vNode) || isTextVNode(vNode)) {
+        unmountVoidOrText(vNode, parentDom);
+    } else if (isComponentVNode(vNode)) {
+        unmountComponent(vNode, parentDom, callback);
+    }
+
+    if (isUndefCallbacks) {
+        callback.notifyAll();
     }
 }

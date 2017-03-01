@@ -26,7 +26,7 @@ import {
 export function _patch(lastVNode, nextVNode) {
     if (!isInvalid(lastVNode)) {
         if (isDOM(lastVNode)) {
-            render(nextVNode, vNode);
+            render(nextVNode, lastVNode);
         } else if (isVNode(lastVNode) && isVNode(nextVNode)) {
             if (lastVNode.dom) {
                 patch(lastVNode, nextVNode);
@@ -87,5 +87,5 @@ export function findDOMNode(vNode) {
             return vNode._vNode.dom;
         }
     }
-    return null
+    return null;
 }

@@ -83,4 +83,4 @@ export {
     NeactComponent as Component,
     NeactPureComponent as PureComponent,
     utils
-}
+};

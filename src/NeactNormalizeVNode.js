@@ -21,7 +21,7 @@ export function normalizeVNodes(nodes, parentVNode) {
 
     for (let i = 0; i < nodes.length; i++) {
         let n = nodes[i];
-        if (isInvalid(n)) continue;
+        if (isInvalid(n)) { continue; }
         if (isStringOrNumber(n)) {
             n = createTextVNode(n);
         }

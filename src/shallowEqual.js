@@ -1,10 +1,14 @@
 'use strict';
 
+import { isObject } from './NeactUtils';
+
 var hasOwnProperty = Object.prototype.hasOwnProperty,
     nativeKeys = Object.keys;
 
 function keys(obj) {
-    if (nativeKeys) return nativeKeys(obj);
+    if (nativeKeys) {
+        return nativeKeys(obj);
+    }
 
     var keys = [];
 
@@ -42,7 +46,7 @@ export default function shallowEqual(objA, objB) {
         return true;
     }
 
-    if (typeof objA !== 'object' || objA === null || typeof objB !== 'object' || objB === null) {
+    if (!isObject(objA) || objA === null || !isObject(objB) || objB === null) {
         return false;
     }
 

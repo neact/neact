@@ -14,7 +14,7 @@ import {
 } from './constants';
 
 export default function(lastValue, nextValue, prop, isSVG, dom, vNode) {
-    if (lastValue === nextValue) return;
+    if (lastValue === nextValue) { return; }
     if (skipProps[prop]) {
         return;
     }

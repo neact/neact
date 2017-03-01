@@ -17,8 +17,29 @@ export function toArray(obj) {
     return isArray(obj) ? obj : [obj];
 }
 
+export function isUndefined(obj) {
+    return obj === undefined;
+}
+
 export function isStatefulComponent(o) {
     return !isUndefined(o.prototype) && !isUndefined(o.prototype.render);
+}
+
+export function isString(obj) {
+    return typeof obj === 'string';
+}
+
+
+export function isNumber(obj) {
+    return typeof obj === 'number';
+}
+
+export function isTrue(obj) {
+    return obj === true;
+}
+
+export function isNull(obj) {
+    return obj === null;
 }
 
 export function isStringOrNumber(obj) {
@@ -41,26 +62,6 @@ export function isAttrAnEvent(attr) {
     return attr[0] === 'o' && attr[1] === 'n' && attr.length > 3;
 }
 
-export function isString(obj) {
-    return typeof obj === 'string';
-}
-
-export function isNumber(obj) {
-    return typeof obj === 'number';
-}
-
-export function isNull(obj) {
-    return obj === null;
-}
-
-export function isTrue(obj) {
-    return obj === true;
-}
-
-export function isUndefined(obj) {
-    return obj === undefined;
-}
-
 export function isDefined(obj) {
     return obj !== undefined;
 }
@@ -81,15 +82,15 @@ export function throwError(message) {
     throw new Error(`Neact Error: ${ message }`);
 }
 
-export function warning(message) {
-    console && console.warn(message);
+export function warning(msg) {
+    if (console) {
+        console.warn(msg);
+    }
 }
 
 export const EMPTY_OBJ = {};
 
 export function inherits(cls, base, proto) {
-    var clsProto = cls.prototype;
-
     function F() {}
     F.prototype = base.prototype;
     cls.prototype = new F();

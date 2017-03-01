@@ -8,6 +8,10 @@ import {
     emptyVNode
 } from './NeactElement';
 
+import {
+    isObject
+} from './NeactUtils';
+
 function ename(s) {
     return s.replace('on', '');
 }
@@ -17,7 +21,7 @@ function invokeHandler(handler, vnode, event) {
     if (typeof handler === "function") {
         // call function handler
         handler.call(el, event, vnode);
-    } else if (typeof handler === "object") {
+    } else if (isObject(handler)) {
         // call handler with arguments
         if (typeof handler[0] === "function") {
             // special case for single argument for performance

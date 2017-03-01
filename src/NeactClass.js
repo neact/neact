@@ -1,6 +1,7 @@
 'use strict';
 import {
     isArray,
+    isObject,
     inherits
 } from './NeactUtils';
 
@@ -20,7 +21,7 @@ export function createClass(spec) {
 
         var initialState = this.getInitialState ? this.getInitialState(this.props, this.context) : null;
 
-        if (!(typeof initialState === 'object' && !isArray(initialState))) {
+        if (!(isObject(initialState) && !isArray(initialState))) {
             new TypeError('getInitialState(): must return an object or null');
         }
 

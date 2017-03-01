@@ -21,7 +21,7 @@ function setNextFrame(obj, prop, val) {
 }
 
 export default function(lastValue, nextValue, prop, isSVG, dom, vNode) {
-    if (lastValue === nextValue) return;
+    if (lastValue === nextValue) { return; }
     if (isString(nextValue)) {
         dom.style.cssText = nextValue;
         return;
@@ -32,7 +32,7 @@ export default function(lastValue, nextValue, prop, isSVG, dom, vNode) {
         oldStyle = lastValue,
         style = nextValue;
 
-    if (!oldStyle && !style) return;
+    if (!oldStyle && !style) { return; }
     oldStyle = oldStyle || emptyObject;
     style = style || emptyObject;
     var oldHasDel = 'delayed' in oldStyle;
