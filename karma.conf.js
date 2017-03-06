@@ -4,7 +4,7 @@
 module.exports = function(config) {
     config.set({
         basePath: '',
-        frameworks: ['jasmine'],
+        frameworks: ['mocha', 'chai-sinon'],
         files: [
             'test/**/*.js'
         ],
@@ -12,11 +12,14 @@ module.exports = function(config) {
         preprocessors: {
             'test/**/*.js': ['webpack']
         },
-        reporters: ['progress', 'coverage'],
+        reporters: ['progress', 'coverage', 'mocha'],
         coverageReporter: {
             type: 'html',
             dir: 'coverage/'
         },
+        mochaReporter: {
+			showDiff: true
+		},
         port: 9876,
         colors: true,
         logLevel: config.LOG_INFO,
@@ -31,7 +34,7 @@ module.exports = function(config) {
                     loader: 'babel',
                     exclude: /node_modules/,
                     query: {
-                        presets: ['es2015'],
+                        presets: ['es2015', 'react'],
                         plugins: ['istanbul']
                     }
                 }]
