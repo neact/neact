@@ -115,6 +115,8 @@ function patchElement(lastVNode, nextVNode, parentDom, callback, context, isSVG)
     const nextChildren = nextVNode.children;
     const lastEvents = lastVNode.events;
     const nextEvents = nextVNode.events;
+    const lastHtml = lastProps && lastProps.dangerouslySetInnerHTML && lastProps.dangerouslySetInnerHTML.__html;
+    const nextHtml = nextProps && nextProps.dangerouslySetInnerHTML && nextProps.dangerouslySetInnerHTML.__html;
 
     nextVNode.dom = dom;
 
@@ -127,14 +129,18 @@ function patchElement(lastVNode, nextVNode, parentDom, callback, context, isSVG)
         detachRef(lastVNode);
     }
 
-    processElement(dom, nextVNode);
-
-    updateDOMProperty(lastVNode.props, nextVNode.props, isSVG, nextVNode);
-    updateDOMEvents(lastVNode, nextVNode);
+    if(!isNullOrUndef(lastHtml) && isNullOrUndef(nextHtml)) {
+        dom.innerHTML = '';
+    }
 
     if (lastChildren !== nextChildren) {
         patchChildren(lastChildren, nextChildren, dom, callback, context, isSVG);
     }
+
+    processElement(dom, nextVNode);
+
+    updateDOMProperty(lastVNode.props, nextVNode.props, isSVG, nextVNode);
+    updateDOMEvents(lastVNode, nextVNode);
 
     if (!isNull(nextVNode.ref)) {
         callback.enqueue(() => attachRef(nextVNode));
@@ -214,7 +220,7 @@ function updateChildren(oldCh, newCh, parentElm, callback, context, isSVG) {
             oldEndVnode = oldCh[--oldEndIdx];
             newStartVnode = newCh[++newStartIdx];
         } else {
-            if (isUndefined(oldKeyToIdx)) oldKeyToIdx = createKeyToOldIdx(oldCh, oldStartIdx, oldEndIdx);
+            if (isUndefined(oldKeyToIdx)) {oldKeyToIdx = createKeyToOldIdx(oldCh, oldStartIdx, oldEndIdx);}
 
             idxInOld = oldKeyToIdx[newStartVnode.key];
 
@@ -346,8 +352,13 @@ function patchComponent(lastVNode, nextVNode, parentDom, callback, context, isSV
         }
 
         if (shouldUpdate !== false) {
+            let refsChanged = shouldUpdateRefs(lastVNode, nextVNode);
+            if (refsChanged) {
+                detachRef(lastVNode);
+            }
+
             if (!isNullOrUndef(nextProps.onComponentWillUpdate)) {
-                nextProps.onComponentWillUpdate(lastProps, nextProps, vNode);
+                nextProps.onComponentWillUpdate(lastProps, nextProps, nextVNode);
             }
             nextVNode.children = nextType(nextProps, context);
 
@@ -361,6 +372,10 @@ function patchComponent(lastVNode, nextVNode, parentDom, callback, context, isSV
 
             patch(lastChildren, nextChildren, parentDom, callback, context, isSVG);
             nextVNode.dom = nextChildren.dom;
+
+            if (!isNull(nextVNode.ref)) {
+                callback.enqueue(() => attachRef(nextVNode));
+            }
 
             if (!isNullOrUndef(nextProps.onComponentDidUpdate)) {
                 callback.enqueue(() => nextProps.onComponentDidUpdate(nextVNode));

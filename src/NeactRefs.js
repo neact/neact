@@ -24,7 +24,7 @@ export function attachRef(vNode) {
     var ref = vNode.ref;
     var owner = vNode._owner;
     var target = vNode._instance || vNode.dom;
-
+    
     if (typeof ref === 'function') {
         ref(target);
     } else if (ref && owner) {

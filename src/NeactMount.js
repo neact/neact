@@ -114,11 +114,6 @@ export function mountElement(vNode, parentDom, callback, context, isSVG) {
         hooks.beforeCreate(vNode);
     }
 
-    processElement(dom, vNode);
-
-    createDOMProperty(props, isSVG, vNode);
-    createDOMEvents(vNode);
-
     if (!isNull(children)) {
         if (isArray(children)) {
             mountArrayChildren(children, dom, callback, context, isSVG);
@@ -126,6 +121,11 @@ export function mountElement(vNode, parentDom, callback, context, isSVG) {
             mount(children, dom, callback, context, isSVG);
         }
     }
+    
+    processElement(dom, vNode);
+
+    createDOMProperty(props, isSVG, vNode);
+    createDOMEvents(vNode);
 
     if (!isNull(vNode.ref)) {
         callback.enqueue(() => attachRef(vNode));
@@ -173,7 +173,7 @@ export function mountComponent(vNode, parentDom, callback, context, isSVG) {
 
         inst._ignoreSetState = true;
         NeactCurrentOwner.current = inst;
-        vNode.children = inst.render();
+        vNode.children = inst.render(inst.props, inst.state, inst.context);
         NeactCurrentOwner.current = null;
         inst._ignoreSetState = false;
         normalizeComponentChildren(vNode);
@@ -210,6 +210,10 @@ export function mountComponent(vNode, parentDom, callback, context, isSVG) {
         vNode.children = type(props, context);
         normalizeComponentChildren(vNode);
         vNode.dom = dom = mount(vNode.children, parentDom, callback, context, isSVG);
+
+        if (!isNull(vNode.ref)) {
+            callback.enqueue(() => attachRef(vNode));
+        }
 
         if (!isNullOrUndef(props.onComponentDidMount)) {
             callback.enqueue(() => props.onComponentDidMount(vNode));

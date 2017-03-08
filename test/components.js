@@ -1,6 +1,6 @@
 'use strict';
 
-import { createElement as h, render, Component } from '../src/Neact';
+import { createElement as h, render, Component, unmountComponentAtNode } from '../src/Neact';
 /** @jsx h */
 
 
@@ -38,35 +38,37 @@ describe('Components', () => {
 	});
 
 	beforeEach( () => {
-		render(<Empty />, scratch);
-		scratch.innerHTML = '';
+		//unmountComponentAtNode(scratch)
+		render(h(Empty), scratch);
+		//scratch.innerHTML = '';
 	});
 
 	after( () => {
-		scratch.parentNode.removeChild(scratch);
+		unmountComponentAtNode(scratch)
 		scratch = null;
 	});
 
 	it('should render components', () => {
 		class C1 extends Component {
 			render() {
-				return <div>C1</div>;
+				return h('div', null, 'C1');
 			}
 		}
 		sinon.spy(C1.prototype, 'render');
-		render(<C1 />, scratch);
+		render(h(C1), scratch);
 
 		expect(C1.prototype.render)
 			.to.have.been.calledOnce
 			.and.to.have.been.calledWithMatch({}, {})
-			.and.to.have.returned(sinon.match({ nodeName:'div' }));
+			.and.to.have.returned(sinon.match({ type:'div' }));
 
 		expect(scratch.innerHTML).to.equal('<div>C1</div>');
 	});
 
-	return;
+	
 	it('should render functional components', () => {
-		const PROPS = { foo:'bar', onBaz:()=>{} };
+		var fn = ()=>{};
+		const PROPS = { foo:'bar', onBaz:fn };
 
 		const C3 = sinon.spy( props => <div {...props} /> );
 
@@ -76,13 +78,15 @@ describe('Components', () => {
 			.to.have.been.calledOnce
 			.and.to.have.been.calledWithMatch(PROPS)
 			.and.to.have.returned(sinon.match({
-				nodeName: 'div',
-				attributes: PROPS
+				type: 'div',
+				props: { foo:'bar' },
+				events : {
+					onbaz : fn
+				}
 			}));
 
 		expect(scratch.innerHTML).to.equal('<div foo="bar"></div>');
 	});
-
 
 	it('should render components with props', () => {
 		const PROPS = { foo:'bar', onBaz:()=>{} };
@@ -93,7 +97,8 @@ describe('Components', () => {
 				super(props);
 				constructorProps = props;
 			}
-			render(props) {
+			render() {
+				var props = this.props;
 				return <div {...props} />;
 			}
 		}
@@ -101,19 +106,21 @@ describe('Components', () => {
 
 		render(<C2 {...PROPS} />, scratch);
 
-		expect(constructorProps).to.deep.equal(PROPS);
+		//状态组件props会有children属性
+		PROPS.children = null;
+
+		expect(constructorProps).to.deep.equal( PROPS );
 
 		expect(C2.prototype.render)
 			.to.have.been.calledOnce
 			.and.to.have.been.calledWithMatch(PROPS, {})
 			.and.to.have.returned(sinon.match({
-				nodeName: 'div',
-				attributes: PROPS
+				type: 'div',
+				props: { foo:'bar' }
 			}));
 
 		expect(scratch.innerHTML).to.equal('<div foo="bar"></div>');
 	});
-
 
 	// Test for Issue #73
 	it('should remove orphaned elements replaced by Components', () => {
@@ -123,9 +130,9 @@ describe('Components', () => {
 			}
 		}
 
-		let root;
+		
 		function test(content) {
-			root = render(content, scratch, root);
+			render(content, scratch);
 		}
 
 		test(<Comp />);
@@ -139,26 +146,34 @@ describe('Components', () => {
 	// Test for Issue #176
 	it('should remove children when root changes to text node', () => {
 		let comp;
+		var dom;
 
 		class Comp extends Component {
-			render(_, { alt }) {
-				return alt ? 'asdf' : <div>test</div>;
+			render() {
+				var _ = this.props;
+				var alt = this.state.alt;
+				return alt ? 'asdf' : <div ref={function(el){ dom = el; }}>test</div>;
 			}
 		}
 
-		render(<Comp ref={c=>comp=c} />, scratch);
+		comp = render(<Comp />, scratch);
+
+		expect(dom.innerHTML).to.equal('test');
 
 		comp.setState({ alt:true });
-		comp.forceUpdate();
+		//comp.forceUpdate();
 		expect(scratch.innerHTML, 'switching to textnode').to.equal('asdf');
-
+		expect(dom).to.equal(null);
 		comp.setState({ alt:false });
-		comp.forceUpdate();
+		//comp.forceUpdate();
 		expect(scratch.innerHTML, 'switching to element').to.equal('<div>test</div>');
+		
+		expect(dom.innerHTML).to.equal('test');
 
 		comp.setState({ alt:true });
-		comp.forceUpdate();
+		//comp.forceUpdate();
 		expect(scratch.innerHTML, 'switching to textnode 2').to.equal('asdf');
+		expect(dom).to.equal(null);
 	});
 
 		// Test for Issue #254
@@ -185,7 +200,9 @@ describe('Components', () => {
 				this.state.alt = false;
 			}
 
-			render(_, {alt}) {
+			render() {
+				var _ = this.props;
+				var alt = this.state.alt;
 				return (
 					<div>
 						{alt ? null : (<Comp key={1} alt={alt}/>)}
@@ -203,7 +220,9 @@ describe('Components', () => {
 				this.state.alt = false;
 			}
 
-			render(_, {alt}) {
+			render() {
+				var _ = this.props;
+				var alt = this.state.alt;
 				return (
 					<div>
 						{alt ? null : (<Comp alt={alt}/>)}
@@ -215,15 +234,15 @@ describe('Components', () => {
 		}
 
 		let good, bad;
-		let root = render(<GoodContainer ref={c=>good=c} />, scratch);
+		good = render(<GoodContainer  />, scratch);
 		expect(scratch.textContent, 'new component with key present').to.equal('AB');
 		expect(Comp.prototype.componentWillMount).to.have.been.calledTwice;
 		expect(sideEffect).to.have.been.calledTwice;
-
+		
 		sideEffect.reset();
 		Comp.prototype.componentWillMount.reset();
 		good.setState({alt: true});
-		good.forceUpdate();
+		//good.forceUpdate();
 		expect(scratch.textContent, 'new component with key present re-rendered').to.equal('C');
 		//we are recycling the first 2 components already rendered, just need a new one
 		expect(Comp.prototype.componentWillMount).to.have.been.calledOnce;
@@ -231,7 +250,7 @@ describe('Components', () => {
 
 		sideEffect.reset();
 		Comp.prototype.componentWillMount.reset();
-		render(<BadContainer ref={c=>bad=c} />, scratch, root);
+		bad = render(<BadContainer />, scratch);
 		expect(scratch.textContent, 'new component without key').to.equal('DE');
 		expect(Comp.prototype.componentWillMount).to.have.been.calledTwice;
 		expect(sideEffect).to.have.been.calledTwice;
@@ -239,14 +258,13 @@ describe('Components', () => {
 		sideEffect.reset();
 		Comp.prototype.componentWillMount.reset();
 		bad.setState({alt: true});
-		bad.forceUpdate();
+		//bad.forceUpdate();
 		expect(scratch.textContent, 'new component without key re-rendered').to.equal('D');
 		expect(Comp.prototype.componentWillMount).to.not.have.been.called;
 		expect(sideEffect).to.not.have.been.called;
 
 
 	});
-
 
 
 	describe('props.children', () => {
@@ -271,10 +289,10 @@ describe('Components', () => {
 		});
 	});
 
-
 	describe('High-Order Components', () => {
 		it('should render nested functional components', () => {
-			const PROPS = { foo:'bar', onBaz:()=>{} };
+			const fn= ()=>{};
+			const PROPS = { foo:'bar', onBaz:fn };
 
 			const Outer = sinon.spy(
 				props => <Inner {...props} />
@@ -290,17 +308,25 @@ describe('Components', () => {
 				.to.have.been.calledOnce
 				.and.to.have.been.calledWithMatch(PROPS)
 				.and.to.have.returned(sinon.match({
-					nodeName: Inner,
-					attributes: PROPS
+					type: Inner,
+					props: PROPS
 				}));
 
 			expect(Inner)
 				.to.have.been.calledOnce
 				.and.to.have.been.calledWithMatch(PROPS)
 				.and.to.have.returned(sinon.match({
-					nodeName: 'div',
-					attributes: PROPS,
-					children: ['inner']
+					type: 'div',
+					props: {
+						foo : 'bar'
+					},
+					events : {
+						onbaz : fn
+					},
+					children: {
+						type : '#text',
+						children : 'inner'
+					}
 				}));
 
 			expect(scratch.innerHTML).to.equal('<div foo="bar">inner</div>');
@@ -314,7 +340,9 @@ describe('Components', () => {
 					doRender = () => this.setState({ i: ++i });
 				}
 				componentWillUnmount() {}
-				render(props, { i }) {
+				render() {
+					var props = this.props;
+					var i = this.state.i;
 					return <Inner i={i} {...props} />;
 				}
 			}
@@ -330,7 +358,7 @@ describe('Components', () => {
 
 			// update & flush
 			doRender();
-			rerender();
+			//rerender();
 
 			expect(Outer.prototype.componentWillUnmount)
 				.not.to.have.been.called;
@@ -340,7 +368,7 @@ describe('Components', () => {
 			expect(Inner.secondCall)
 				.to.have.been.calledWithMatch({ foo:'bar', i:2 })
 				.and.to.have.returned(sinon.match({
-					attributes: {
+					props: {
 						j: 2,
 						i: 2,
 						foo: 'bar'
@@ -355,14 +383,14 @@ describe('Components', () => {
 
 			// update & flush
 			doRender();
-			rerender();
+			//rerender();
 
 			expect(Inner).to.have.been.calledThrice;
 
 			expect(Inner.thirdCall)
 				.to.have.been.calledWithMatch({ foo:'bar', i:3 })
 				.and.to.have.returned(sinon.match({
-					attributes: {
+					props: {
 						j: 3,
 						i: 3,
 						foo: 'bar'
@@ -375,7 +403,7 @@ describe('Components', () => {
 				foo: 'bar'
 			});
 		});
-
+		
 		it('should re-render nested components', () => {
 			let doRender = null,
 				alt = false;
@@ -423,10 +451,10 @@ describe('Components', () => {
 
 			// update & flush
 			doRender();
-			rerender();
+			//rerender();
 
 			expect(Outer.prototype.componentWillUnmount).not.to.have.been.called;
-
+			
 			expect(Inner.prototype._constructor).to.have.been.calledOnce;
 			expect(Inner.prototype.componentWillUnmount).not.to.have.been.called;
 			expect(Inner.prototype.componentDidUnmount).not.to.have.been.called;
@@ -437,7 +465,7 @@ describe('Components', () => {
 			expect(Inner.prototype.render.secondCall)
 				.to.have.been.calledWithMatch({ foo:'bar', i:2 })
 				.and.to.have.returned(sinon.match({
-					attributes: {
+					props: {
 						j: 2,
 						i: 2,
 						foo: 'bar'
@@ -454,7 +482,7 @@ describe('Components', () => {
 
 			// update & flush
 			doRender();
-			rerender();
+			//rerender();
 
 			expect(Inner.prototype.componentWillUnmount).not.to.have.been.called;
 			expect(Inner.prototype.componentDidUnmount).not.to.have.been.called;
@@ -465,7 +493,7 @@ describe('Components', () => {
 			expect(Inner.prototype.render.thirdCall)
 				.to.have.been.calledWithMatch({ foo:'bar', i:3 })
 				.and.to.have.returned(sinon.match({
-					attributes: {
+					props: {
 						j: 3,
 						i: 3,
 						foo: 'bar'
@@ -482,7 +510,7 @@ describe('Components', () => {
 			// update & flush
 			alt = true;
 			doRender();
-			rerender();
+			//rerender();
 
 			expect(Inner.prototype.componentWillUnmount).to.have.been.calledOnce;
 			expect(Inner.prototype.componentDidUnmount).to.have.been.calledOnce;
@@ -492,7 +520,7 @@ describe('Components', () => {
 			// update & flush
 			alt = false;
 			doRender();
-			rerender();
+			//rerender();
 
 			expect(sortAttributes(scratch.innerHTML)).to.equal(sortAttributes('<div foo="bar" j="4" i="5">inner</div>'));
 		});
@@ -517,16 +545,20 @@ describe('Components', () => {
 					return <div>inner</div>;
 				}
 			}
+			
+			sinon.spy(Inner.prototype, 'componentWillMount');
+			sinon.spy(Inner.prototype, 'componentDidMount');
+			sinon.spy(Inner.prototype, 'componentWillUnmount');
+			sinon.spy(Inner.prototype, 'componentDidUnmount');
+			sinon.spy(Inner.prototype, 'render');
 
-			spyAll(Inner.prototype);
+			render(<Root />, scratch);
 
-			let root = render(<Root />, scratch);
-
-			expect(Inner.prototype.componentWillMount).to.have.been.calledOnce;
+			expect(Inner.prototype.componentWillMount).to.have.been.calledOnce;return;
 			expect(Inner.prototype.componentDidMount).to.have.been.calledOnce;
 			expect(Inner.prototype.componentWillMount).to.have.been.calledBefore(Inner.prototype.componentDidMount);
 
-			render(<asdf />, scratch, root);
+			render(<asdf />, scratch);
 
 			expect(Inner.prototype.componentWillUnmount).to.have.been.calledOnce;
 			expect(Inner.prototype.componentDidUnmount).to.have.been.calledOnce;
@@ -552,7 +584,11 @@ describe('Components', () => {
 					return <C />;
 				}
 			}
-			spyAll(Outer.prototype);
+			sinon.spy(Outer.prototype, 'componentWillMount');
+			sinon.spy(Outer.prototype, 'componentDidMount');
+			sinon.spy(Outer.prototype, 'componentWillUnmount');
+			sinon.spy(Outer.prototype, 'componentDidUnmount');
+			sinon.spy(Outer.prototype, 'render');
 
 			class Inner extends Component {
 				componentWillUnmount(){}
@@ -563,7 +599,11 @@ describe('Components', () => {
 					return h('element'+(++counter));
 				}
 			}
-			spyAll(Inner.prototype);
+			sinon.spy(Inner.prototype, 'componentWillMount');
+			sinon.spy(Inner.prototype, 'componentDidMount');
+			sinon.spy(Inner.prototype, 'componentWillUnmount');
+			sinon.spy(Inner.prototype, 'componentDidUnmount');
+			sinon.spy(Inner.prototype, 'render');
 
 			class Inner2 extends Component {
 				constructor(props, context) {
@@ -578,7 +618,11 @@ describe('Components', () => {
 					return h('element'+(++counter));
 				}
 			}
-			spyAll(Inner2.prototype);
+			sinon.spy(Inner2.prototype, 'componentWillMount');
+			sinon.spy(Inner2.prototype, 'componentDidMount');
+			sinon.spy(Inner2.prototype, 'componentWillUnmount');
+			sinon.spy(Inner2.prototype, 'componentDidUnmount');
+			sinon.spy(Inner2.prototype, 'render');
 
 			render(<Outer child={Inner} />, scratch);
 
@@ -595,7 +639,7 @@ describe('Components', () => {
 			expect(Inner.prototype.componentDidUnmount, 'inner initial').not.to.have.been.called;
 
 			outer.setState({ child:Inner2 });
-			outer.forceUpdate();
+			//outer.forceUpdate();
 
 			expect(Inner2.prototype.render).to.have.been.calledOnce;
 
@@ -634,25 +678,27 @@ describe('Components', () => {
 					return <div class="inner">foo</div>;
 				}
 			}
-			spyAll(Inner.prototype);
+			sinon.spy(Inner.prototype, 'componentWillMount');
+			sinon.spy(Inner.prototype, 'componentWillUnmount');
+			sinon.spy(Inner.prototype, 'render');
 
 			const InnerFunc = () => (
 				<div class="inner-func">bar</div>
 			);
 
-			let root = render(<Outer child={Inner} />, scratch, root);
+			let root = render(<Outer child={Inner} />, scratch);
 
 			expect(Inner.prototype.componentWillMount, 'initial mount').to.have.been.calledOnce;
 			expect(Inner.prototype.componentWillUnmount, 'initial mount').not.to.have.been.called;
 
 			Inner.prototype.componentWillMount.reset();
-			root = render(<Outer child={InnerFunc} />, scratch, root);
+			root = render(<Outer child={InnerFunc} />, scratch);
 
 			expect(Inner.prototype.componentWillMount, 'unmount').not.to.have.been.called;
 			expect(Inner.prototype.componentWillUnmount, 'unmount').to.have.been.calledOnce;
 
 			Inner.prototype.componentWillUnmount.reset();
-			root = render(<Outer child={Inner} />, scratch, root);
+			root = render(<Outer child={Inner} />, scratch);
 
 			expect(Inner.prototype.componentWillMount, 'remount').to.have.been.calledOnce;
 			expect(Inner.prototype.componentWillUnmount, 'remount').not.to.have.been.called;
@@ -667,19 +713,20 @@ describe('Components', () => {
 				componentWillMount() {}
 				componentDidUnmount() {}
 				render({ children }) {
-					if (!useIntermediary) return children[0];
+					if (!useIntermediary) return children;
 					let I = useIntermediary===true ? Intermediary : useIntermediary;
 					return <I>{children}</I>;
 				}
 			}
+
 			spyAll(C.prototype);
 			return C;
 		};
 
-		let createFunction = () => sinon.spy( ({ children }) => children[0] );
+		let createFunction = () => sinon.spy( ({ children }) => children );
 
 		let root;
-		let rndr = n => root = render(n, scratch, root);
+		let rndr = n => root = render(n, scratch);
 
 		let F1 = createFunction();
 		let F2 = createFunction();
@@ -699,9 +746,9 @@ describe('Components', () => {
 			reset();
 			rndr(<C1><C2><C3>Some Text</C3></C2></C1>);
 
-			expect(C1.prototype.componentWillMount, 'initial mount').to.have.been.calledOnce;
-			expect(C2.prototype.componentWillMount, 'initial mount').to.have.been.calledOnce;
-			expect(C3.prototype.componentWillMount, 'initial mount').to.have.been.calledOnce;
+			expect(C1.prototype.componentWillMount, 'C1 initial mount').to.have.been.calledOnce;
+			expect(C2.prototype.componentWillMount, 'C2 initial mount').to.have.been.calledOnce;
+			expect(C3.prototype.componentWillMount, 'C3 initial mount').to.have.been.calledOnce;
 
 			reset();
 			rndr(<C1><C2>Some Text</C2></C1>);

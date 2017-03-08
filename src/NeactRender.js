@@ -51,7 +51,7 @@ export function render(vNode, parentDom) {
 
     if (!lastVnode) {
         if (!isInvalid(vNode) && isVNode(vNode)) {
-            mount(vNode, parentDom);
+            mount(vNode, parentDom, null, {});
             parentDom.__NeactRootNode = vNode;
             return vNode._instance || vNode.dom;
         } else {

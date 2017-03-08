@@ -104,13 +104,23 @@ export function unmountComponent(vNode, parentDom, callback) {
 
             inst._unmounted = true;
             inst._ignoreSetState = false;
+           
+            if (inst.componentDidUnmount) {inst.componentDidUnmount();}
         }
     } else {
         if (!isNullOrUndef(props.onComponentWillUnmount)) {
             props.onComponentWillUnmount(vNode);
         }
 
+        if (!isNull(vNode.ref)) {
+            detachRef(vNode);
+        }
+
         unmount(children, null, callback);
+
+        if (!isNullOrUndef(props.onComponentDidUnmount)) {
+            props.onComponentDidUnmount(vNode);
+        }
     }
 
     if (hooks.destroy) {

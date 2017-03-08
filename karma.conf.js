@@ -24,6 +24,7 @@ module.exports = function(config) {
         colors: true,
         logLevel: config.LOG_INFO,
         autoWatch: true,
+        _tt : "PhantomJS",
         browsers: ['PhantomJS'],
         singleRun: false,
         concurrency: Infinity,
@@ -34,8 +35,8 @@ module.exports = function(config) {
                     loader: 'babel',
                     exclude: /node_modules/,
                     query: {
-                        presets: ['es2015', 'react'],
-                        plugins: ['istanbul']
+                        presets: [['es2015', { loose :true }], 'react'],
+                        plugins: ['istanbul', "transform-object-rest-spread"]
                     }
                 }]
             }

@@ -112,7 +112,7 @@ export default function NeactComponent(props, context) {
     this.refs = {};
     this.props = props || {};
     this.context = context || {};
-};
+}
 
 assign(NeactComponent.prototype, {
     _vNode: null,
@@ -227,7 +227,7 @@ assign(NeactComponent.prototype, {
             inst.state = nextState;
             inst.context = context;
             NeactCurrentOwner.current = inst;
-            children = inst.render();
+            children = inst.render(inst.props, inst.state, inst.context);
             NeactCurrentOwner.current = null;
         }
 

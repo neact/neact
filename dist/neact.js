@@ -395,7 +395,7 @@ function createElement(type, config) {
             if (prop === 'key') {
                 key = '' + config.key;
             } else if (prop === 'ref') {
-                ref = '' + config.ref;
+                ref = config.ref;
             } else if (prop === 'hooks') {
                 hooks = config.hooks;
             } else if (isAttrAnEvent(prop) && isString(type)) {
@@ -427,12 +427,18 @@ function createElement(type, config) {
         children = props.children;
     }
 
-    //delete props.children;
+    delete props.children;
 
     //props.children = children;
 
     if (type && type[0] === 's' && type[1] === 'v' && type[2] === 'g') {
         isSVG = true;
+    }
+
+    if (isString(type)) {
+        if (props.dangerouslySetInnerHTML && !isNullOrUndef(children)) {
+            throwError('Can only set one of `children` or `props.dangerouslySetInnerHTML`');
+        }
     }
 
     return createVNode(type, props, children, events, hooks, ref, key, isSVG, NeactCurrentOwner.current);
@@ -740,13 +746,25 @@ function unmountComponent(vNode, parentDom, callback) {
 
             inst._unmounted = true;
             inst._ignoreSetState = false;
+
+            if (inst.componentDidUnmount) {
+                inst.componentDidUnmount();
+            }
         }
     } else {
         if (!isNullOrUndef(props.onComponentWillUnmount)) {
             props.onComponentWillUnmount(vNode);
         }
 
+        if (!isNull(vNode.ref)) {
+            detachRef(vNode);
+        }
+
         unmount(children, null, callback);
+
+        if (!isNullOrUndef(props.onComponentDidUnmount)) {
+            props.onComponentDidUnmount(vNode);
+        }
     }
 
     if (hooks.destroy) {
@@ -1015,6 +1033,10 @@ var processDOMStyle = function (lastValue, nextValue, prop, isSVG, dom, vNode) {
         dom.style.cssText = nextValue;
         return;
     }
+    if (isString(lastValue)) {
+        dom.style.cssText = '';
+        lastValue = {};
+    }
 
     var cur,
         name,
@@ -1095,7 +1117,7 @@ var processDOMAttr = function (lastValue, nextValue, prop, isSVG, dom, vNode) {
             dom[prop] = value;
         }
     } else {
-        if (isNullOrUndef(nextValue)) {
+        if (isNullOrUndef(nextValue) && prop !== 'dangerouslySetInnerHTML') {
             dom.removeAttribute(prop);
         } else if (prop === 'htmlFor') {
             dom.setAttribute('for', nextValue);
@@ -1157,7 +1179,6 @@ function updateDOMProperty(lastProps, nextProps, isSVG, vNode) {
     if (nextProps !== emptyObject) {
         for (var prop in nextProps) {
             // do not add a hasOwnProperty check here, it affects performance
-            //if (!nextProps.hasOwnProperty(prop)) continue;
             var nextValue = isNullOrUndef(nextProps[prop]) ? null : nextProps[prop];
             var lastValue = isNullOrUndef(lastProps[prop]) ? null : lastProps[prop];
             var hook = propertyHooks[prop] ? prop : '__default__';
@@ -1167,7 +1188,6 @@ function updateDOMProperty(lastProps, nextProps, isSVG, vNode) {
     if (lastProps !== emptyObject) {
         for (var _prop in lastProps) {
             if (isNullOrUndef(nextProps[_prop])) {
-                //lastProps.hasOwnProperty(prop) && 
                 var _lastValue = isNullOrUndef(lastProps[_prop]) ? null : lastProps[_prop];
                 var _hook = propertyHooks[_prop] ? _prop : '__default__';
                 propertyHooks[_hook](_lastValue, null, _prop, isSVG, dom, vNode);
@@ -1244,11 +1264,6 @@ function mountElement(vNode, parentDom, callback, context, isSVG) {
         hooks.beforeCreate(vNode);
     }
 
-    processElement(dom, vNode);
-
-    createDOMProperty(props, isSVG, vNode);
-    createDOMEvents(vNode);
-
     if (!isNull(children)) {
         if (isArray(children)) {
             mountArrayChildren(children, dom, callback, context, isSVG);
@@ -1256,6 +1271,11 @@ function mountElement(vNode, parentDom, callback, context, isSVG) {
             mount(children, dom, callback, context, isSVG);
         }
     }
+
+    processElement(dom, vNode);
+
+    createDOMProperty(props, isSVG, vNode);
+    createDOMEvents(vNode);
 
     if (!isNull(vNode.ref)) {
         callback.enqueue(function () {
@@ -1308,7 +1328,7 @@ function mountComponent(vNode, parentDom, callback, context, isSVG) {
 
         inst._ignoreSetState = true;
         NeactCurrentOwner.current = inst;
-        vNode.children = inst.render();
+        vNode.children = inst.render(inst.props, inst.state, inst.context);
         NeactCurrentOwner.current = null;
         inst._ignoreSetState = false;
         normalizeComponentChildren(vNode);
@@ -1352,6 +1372,12 @@ function mountComponent(vNode, parentDom, callback, context, isSVG) {
         vNode.children = type(props, context);
         normalizeComponentChildren(vNode);
         vNode.dom = dom = mount(vNode.children, parentDom, callback, context, isSVG);
+
+        if (!isNull(vNode.ref)) {
+            callback.enqueue(function () {
+                return attachRef(vNode);
+            });
+        }
 
         if (!isNullOrUndef(props.onComponentDidMount)) {
             callback.enqueue(function () {
@@ -1435,6 +1461,8 @@ function patchElement(lastVNode, nextVNode, parentDom, callback, context, isSVG)
     var nextChildren = nextVNode.children;
     var lastEvents = lastVNode.events;
     var nextEvents = nextVNode.events;
+    var lastHtml = lastProps && lastProps.dangerouslySetInnerHTML && lastProps.dangerouslySetInnerHTML.__html;
+    var nextHtml = nextProps && nextProps.dangerouslySetInnerHTML && nextProps.dangerouslySetInnerHTML.__html;
 
     nextVNode.dom = dom;
 
@@ -1447,14 +1475,18 @@ function patchElement(lastVNode, nextVNode, parentDom, callback, context, isSVG)
         detachRef(lastVNode);
     }
 
-    processElement(dom, nextVNode);
-
-    updateDOMProperty(lastVNode.props, nextVNode.props, isSVG, nextVNode);
-    updateDOMEvents(lastVNode, nextVNode);
+    if (!isNullOrUndef(lastHtml) && isNullOrUndef(nextHtml)) {
+        dom.innerHTML = '';
+    }
 
     if (lastChildren !== nextChildren) {
         patchChildren(lastChildren, nextChildren, dom, callback, context, isSVG);
     }
+
+    processElement(dom, nextVNode);
+
+    updateDOMProperty(lastVNode.props, nextVNode.props, isSVG, nextVNode);
+    updateDOMEvents(lastVNode, nextVNode);
 
     if (!isNull(nextVNode.ref)) {
         callback.enqueue(function () {
@@ -1540,7 +1572,9 @@ function updateChildren(oldCh, newCh, parentElm, callback, context, isSVG) {
             oldEndVnode = oldCh[--oldEndIdx];
             newStartVnode = newCh[++newStartIdx];
         } else {
-            if (isUndefined(oldKeyToIdx)) oldKeyToIdx = createKeyToOldIdx(oldCh, oldStartIdx, oldEndIdx);
+            if (isUndefined(oldKeyToIdx)) {
+                oldKeyToIdx = createKeyToOldIdx(oldCh, oldStartIdx, oldEndIdx);
+            }
 
             idxInOld = oldKeyToIdx[newStartVnode.key];
 
@@ -1684,8 +1718,13 @@ function patchComponent(lastVNode, nextVNode, parentDom, callback, context, isSV
         }
 
         if (_shouldUpdate !== false) {
+            var _refsChanged = shouldUpdateRefs(lastVNode, nextVNode);
+            if (_refsChanged) {
+                detachRef(lastVNode);
+            }
+
             if (!isNullOrUndef(nextProps.onComponentWillUpdate)) {
-                nextProps.onComponentWillUpdate(_lastProps, nextProps, vNode);
+                nextProps.onComponentWillUpdate(_lastProps, nextProps, nextVNode);
             }
             nextVNode.children = nextType(nextProps, context);
 
@@ -1699,6 +1738,12 @@ function patchComponent(lastVNode, nextVNode, parentDom, callback, context, isSV
 
             patch(_lastChildren, _nextChildren, parentDom, callback, context, isSVG);
             nextVNode.dom = _nextChildren.dom;
+
+            if (!isNull(nextVNode.ref)) {
+                callback.enqueue(function () {
+                    return attachRef(nextVNode);
+                });
+            }
 
             if (!isNullOrUndef(nextProps.onComponentDidUpdate)) {
                 callback.enqueue(function () {
@@ -1743,7 +1788,7 @@ function render(vNode, parentDom) {
 
     if (!lastVnode) {
         if (!isInvalid(vNode) && isVNode(vNode)) {
-            mount(vNode, parentDom);
+            mount(vNode, parentDom, null, {});
             parentDom.__NeactRootNode = vNode;
             return vNode._instance || vNode.dom;
         } else {
@@ -2049,7 +2094,7 @@ assign(NeactComponent.prototype, {
             inst.state = nextState;
             inst.context = context;
             NeactCurrentOwner.current = inst;
-            children = inst.render();
+            children = inst.render(inst.props, inst.state, inst.context);
             NeactCurrentOwner.current = null;
         }
 

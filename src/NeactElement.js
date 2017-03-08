@@ -130,7 +130,7 @@ export function createElement(type, config, ..._children) {
             if (prop === 'key') {
                 key = '' + config.key;
             } else if (prop === 'ref') {
-                ref = '' + config.ref;
+                ref = config.ref;
             } else if (prop === 'hooks') {
                 hooks = config.hooks;
             } else if (isAttrAnEvent(prop) && isString(type)) {
@@ -161,12 +161,18 @@ export function createElement(type, config, ..._children) {
         children = props.children;
     }
 
-    //delete props.children;
+    delete props.children;
 
     //props.children = children;
 
     if (type && type[0] === 's' && type[1] === 'v' && type[2] === 'g') {
         isSVG = true;
+    }
+
+    if (isString(type)) {
+        if(props.dangerouslySetInnerHTML && !isNullOrUndef(children)) {
+            throwError('Can only set one of `children` or `props.dangerouslySetInnerHTML`');
+        }
     }
 
     return createVNode(type, props, children, events, hooks, ref, key, isSVG, NeactCurrentOwner.current);

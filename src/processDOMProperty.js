@@ -39,7 +39,6 @@ export function updateDOMProperty(lastProps, nextProps, isSVG, vNode) {
     if (nextProps !== emptyObject) {
         for (let prop in nextProps) {
             // do not add a hasOwnProperty check here, it affects performance
-            //if (!nextProps.hasOwnProperty(prop)) continue;
             const nextValue = isNullOrUndef(nextProps[prop]) ? null : nextProps[prop];
             const lastValue = isNullOrUndef(lastProps[prop]) ? null : lastProps[prop];
             const hook = propertyHooks[prop] ? prop : '__default__';
@@ -48,7 +47,7 @@ export function updateDOMProperty(lastProps, nextProps, isSVG, vNode) {
     }
     if (lastProps !== emptyObject) {
         for (let prop in lastProps) {
-            if (isNullOrUndef(nextProps[prop])) { //lastProps.hasOwnProperty(prop) && 
+            if (isNullOrUndef(nextProps[prop])) {
                 const lastValue = isNullOrUndef(lastProps[prop]) ? null : lastProps[prop];
                 const hook = propertyHooks[prop] ? prop : '__default__';
                 propertyHooks[hook](lastValue, null, prop, isSVG, dom, vNode);

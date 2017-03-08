@@ -26,6 +26,10 @@ export default function(lastValue, nextValue, prop, isSVG, dom, vNode) {
         dom.style.cssText = nextValue;
         return;
     }
+    if (isString(lastValue)) {
+        dom.style.cssText = '';
+        lastValue = {};
+    }
 
     var cur, name, elm = dom,
         domStyle = dom.style,

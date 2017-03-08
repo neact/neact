@@ -27,7 +27,7 @@ export default function(lastValue, nextValue, prop, isSVG, dom, vNode) {
             dom[prop] = value;
         }
     } else {
-        if (isNullOrUndef(nextValue)) {
+        if (isNullOrUndef(nextValue) && prop!=='dangerouslySetInnerHTML') {
             dom.removeAttribute(prop);
         } else if (prop === 'htmlFor') {
             dom.setAttribute('for', nextValue);
