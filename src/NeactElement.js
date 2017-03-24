@@ -170,7 +170,7 @@ export function createElement(type, config, ..._children) {
     }
 
     if (isString(type)) {
-        if(props.dangerouslySetInnerHTML && !isNullOrUndef(children)) {
+        if (props.dangerouslySetInnerHTML && !isNullOrUndef(children)) {
             throwError('Can only set one of `children` or `props.dangerouslySetInnerHTML`');
         }
     }
@@ -185,7 +185,7 @@ export function cloneElement(element, config, ..._children) {
     if (isVoidVNode(element)) {
         return createVoidVNode();
     }
-    let prop, children = flatten(_children),
+    let prop, i, child, children = flatten(_children),
         type = element.type,
         props = assign({}, element.props);
 
@@ -239,6 +239,16 @@ export function cloneElement(element, config, ..._children) {
         children = isComponentVNode(element) ? element.props.children : element.children;
     }
 
+    if (children) {
+        if (isArray(children)) {
+            for (i = 0; i < children.length; i++) {
+                child = children[i];
+                children[i] = child && isVNode(child) ? cloneElement(child) : child;
+            }
+        } else {
+            children = cloneElement(children);
+        }
+    }
     //props.children = children;
 
     return createVNode(type, props, children, events, hooks, ref, key, element.isSVG, NeactCurrentOwner.current);

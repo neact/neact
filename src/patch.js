@@ -129,7 +129,7 @@ function patchElement(lastVNode, nextVNode, parentDom, callback, context, isSVG)
         detachRef(lastVNode);
     }
 
-    if(!isNullOrUndef(lastHtml) && isNullOrUndef(nextHtml)) {
+    if (!isNullOrUndef(lastHtml) && isNullOrUndef(nextHtml)) {
         dom.innerHTML = '';
     }
 
@@ -220,7 +220,7 @@ function updateChildren(oldCh, newCh, parentElm, callback, context, isSVG) {
             oldEndVnode = oldCh[--oldEndIdx];
             newStartVnode = newCh[++newStartIdx];
         } else {
-            if (isUndefined(oldKeyToIdx)) {oldKeyToIdx = createKeyToOldIdx(oldCh, oldStartIdx, oldEndIdx);}
+            if (isUndefined(oldKeyToIdx)) { oldKeyToIdx = createKeyToOldIdx(oldCh, oldStartIdx, oldEndIdx); }
 
             idxInOld = oldKeyToIdx[newStartVnode.key];
 
@@ -281,21 +281,22 @@ function patchComponent(lastVNode, nextVNode, parentDom, callback, context, isSV
         const lastProps = inst.props;
         const lastState = inst.state;
         const lastContext = inst.context;
-        let nextChildren, shouldUpdate = false,
-            childContext = inst.getChildContext();
+        let nextChildren, childContext, shouldUpdate = false;
 
         nextVNode.dom = lastVNode.dom;
         nextVNode.children = lastChildren;
         nextVNode._instance = inst;
         inst._isSVG = isSVG;
 
+        nextChildren = inst._updateComponent(lastProps, nextProps, context);
+
+        childContext = inst.getChildContext();
+
         if (!isNullOrUndef(childContext)) {
             childContext = assign({}, context, childContext);
         } else {
             childContext = context;
         }
-
-        nextChildren = inst._updateComponent(lastProps, nextProps, context);
 
         if (nextChildren !== emptyObject) {
             nextVNode.children = nextChildren;

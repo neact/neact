@@ -457,6 +457,8 @@ function cloneElement(element, config) {
     }
 
     var prop = void 0,
+        i = void 0,
+        child = void 0,
         children = flatten(_children),
         type = element.type,
         props = assign({}, element.props);
@@ -512,6 +514,16 @@ function cloneElement(element, config) {
         children = isComponentVNode(element) ? element.props.children : element.children;
     }
 
+    if (children) {
+        if (isArray(children)) {
+            for (i = 0; i < children.length; i++) {
+                child = children[i];
+                children[i] = child && isVNode(child) ? cloneElement(child) : child;
+            }
+        } else {
+            children = cloneElement(children);
+        }
+    }
     //props.children = children;
 
     return createVNode(type, props, children, events, hooks, ref, key, element.isSVG, NeactCurrentOwner.current);
@@ -1639,21 +1651,23 @@ function patchComponent(lastVNode, nextVNode, parentDom, callback, context, isSV
         var lastState = inst.state;
         var lastContext = inst.context;
         var nextChildren = void 0,
-            shouldUpdate = false,
-            childContext = inst.getChildContext();
+            childContext = void 0,
+            shouldUpdate = false;
 
         nextVNode.dom = lastVNode.dom;
         nextVNode.children = lastChildren;
         nextVNode._instance = inst;
         inst._isSVG = isSVG;
 
+        nextChildren = inst._updateComponent(lastProps, nextProps, context);
+
+        childContext = inst.getChildContext();
+
         if (!isNullOrUndef(childContext)) {
             childContext = assign({}, context, childContext);
         } else {
             childContext = context;
         }
-
-        nextChildren = inst._updateComponent(lastProps, nextProps, context);
 
         if (nextChildren !== emptyObject) {
             nextVNode.children = nextChildren;
