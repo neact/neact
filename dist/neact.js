@@ -537,10 +537,11 @@ CallbackQueue.prototype.enqueue = function (callback) {
 };
 
 CallbackQueue.prototype.notifyAll = function () {
-    for (var i = 0; i < this.listeners.length; i++) {
-        this.listeners[i]();
+    var cbs = this.listeners;
+    this.listeners = [];
+    for (var i = 0; i < cbs.length; i++) {
+        cbs[i]();
     }
-    this.listeners.length = 0;
 };
 
 function shouldUpdateRefs(lastVNode, nextVNode) {

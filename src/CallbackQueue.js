@@ -8,8 +8,9 @@ CallbackQueue.prototype.enqueue = function(callback) {
 };
 
 CallbackQueue.prototype.notifyAll = function() {
-    for (let i = 0; i < this.listeners.length; i++) {
-        this.listeners[i]();
+    const cbs = this.listeners;
+    this.listeners = [];
+    for (let i = 0; i < cbs.length; i++) {
+        cbs[i]();
     }
-    this.listeners.length = 0;
 };
