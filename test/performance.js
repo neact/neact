@@ -4,7 +4,7 @@
 
 'use strict';
 
-import { createElement as h, render, Component, unmountComponentAtNode } from '../src/Neact';
+import { createElement as h, render, Component, unmountComponentAtNode } from '../src/neact';
 
 const MULTIPLIER =5;
 

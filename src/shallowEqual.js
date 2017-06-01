@@ -1,6 +1,6 @@
 'use strict';
 
-import { isObject } from './NeactUtils';
+import { isObject } from './shared';
 
 var hasOwnProperty = Object.prototype.hasOwnProperty,
     nativeKeys = Object.keys;

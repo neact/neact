@@ -9,43 +9,41 @@ import {
     isArray,
     isNull,
     isStatefulComponent,
-    toArray,
-    emptyObject,
-    throwError,
-    assign
-} from './NeactUtils';
-
-import {
     isElementVNode,
     isComponentVNode,
     isTextVNode,
     isVoidVNode,
     isVNode,
-    isSameVNode
-} from './NeactElement';
+    isSameVNode,
+    toArray,
+    emptyObject,
+    throwError,
+    assign
+} from './shared';
+
 
 import {
     mount,
     mountArrayChildren,
     normalizeComponentChildren
-} from './NeactMount';
+} from './mount';
 
-import { unmount } from './NeactUnmount';
+import { unmount } from './unmount';
 
 import {
     insertBefore,
     nextSibling,
     replaceWithNewNode,
     setTextContent
-} from './NeactDOMUtils';
+} from './domUtils';
 
 import {
     shouldUpdateRefs,
     attachRef,
     detachRef
-} from './NeactRefs';
+} from './refs';
 
-import CallbackQueue from './CallbackQueue';
+import CallbackQueue from './callbackQueue';
 
 import {
     updateDOMProperty
@@ -55,7 +53,7 @@ import {
     updateDOMEvents
 } from './processDOMEvents';
 
-import processElement from './processElement';
+//import processElement from './processElement';
 
 export function patch(lastVNode, nextVNode, parentDom, callback, context, isSVG) {
     var isUndefCallbacks = isNullOrUndef(callback);
@@ -137,7 +135,7 @@ function patchElement(lastVNode, nextVNode, parentDom, callback, context, isSVG)
         patchChildren(lastChildren, nextChildren, dom, callback, context, isSVG);
     }
 
-    processElement(dom, nextVNode);
+    //processElement(dom, nextVNode);
 
     updateDOMProperty(lastVNode.props, nextVNode.props, isSVG, nextVNode);
     updateDOMEvents(lastVNode, nextVNode);
@@ -307,7 +305,7 @@ function patchComponent(lastVNode, nextVNode, parentDom, callback, context, isSV
 
         inst._childContext = childContext;
         inst._vNode = nextVNode;
-        inst._renderedVNode = nextChildren;
+        //inst._renderedVNode = nextChildren;
 
         if (shouldUpdate) {
 

@@ -1,7 +1,7 @@
 'use strict';
 import {
     createElement as h
-} from "../src/NeactElement";
+} from "../src/createElement";
 
 describe('NeactElement', function() {
     it('createElement() type', function() {

@@ -5,26 +5,29 @@ import {
     findDOMNode,
     unmountComponentAtNode,
     _patch as patch
-} from './NeactRender';
+} from './render';
 
 import processDOMPropertyHooks from './processDOMPropertyHooks';
 
 import {
-    createElement,
     createVNode,
-    createTextVNode,
-    cloneElement,
-    isValidElement
-} from './NeactElement';
+    createTextVNode
+} from './vnode';
+
+import {
+    createElement,
+    cloneElement
+} from './createElement';
 
 import {
     createClass
-} from './NeactClass';
+} from './createClass';
 
-import NeactComponent from './NeactComponent';
-import NeactPureComponent from './NeactPureComponent';
+import Component from './component';
+import PureComponent from './pureComponent';
 
 import {
+    isVNode as isValidElement,
     isNullOrUndef,
     map,
     each,
@@ -34,7 +37,7 @@ import {
     toArray,
     flatten,
     filter
-} from './NeactUtils';
+} from './shared';
 
 var utils = {
     map,
@@ -80,7 +83,7 @@ export {
     isValidElement,
     processDOMPropertyHooks,
     createClass,
-    NeactComponent as Component,
-    NeactPureComponent as PureComponent,
+    Component,
+    PureComponent,
     utils
 };

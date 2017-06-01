@@ -1,6 +1,6 @@
 'use strict';
 
-import { createElement as h, render, Component, unmountComponentAtNode } from '../src/Neact';
+import { createElement as h, render, Component, unmountComponentAtNode } from '../src/neact';
 /** @jsx h */
 
 // gives call count and argument errors names (otherwise sinon just uses "spy"):

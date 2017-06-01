@@ -2,7 +2,7 @@
 import {
     addEventListener,
     removeEventListener
-} from './NeactDOMUtils';
+} from './domUtils';
 
 import {
     isUndefined,
@@ -10,7 +10,7 @@ import {
     isFunction,
     emptyObject,
     assign
-} from './NeactUtils';
+} from './shared';
 
 import processDOMPropertyHooks from './processDOMPropertyHooks';
 

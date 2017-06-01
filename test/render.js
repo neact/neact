@@ -1,6 +1,6 @@
 /* global DISABLE_FLAKEY */
 'use strict';
-import { createElement as h, render, Component, unmountComponentAtNode } from '../src/Neact';
+import { createElement as h, render, Component, unmountComponentAtNode } from '../src/neact';
 /** @jsx h */
 const DISABLE_FLAKEY = true;
 

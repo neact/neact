@@ -1,5 +1,5 @@
 'use strict';
-import { createElement as h, render, unmountComponentAtNode } from '../src/Neact';
+import { createElement as h, render, unmountComponentAtNode } from '../src/neact';
 /** @jsx h */
 
 

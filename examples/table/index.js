@@ -279,4 +279,8 @@ var columns = [{
 }];
 var data = [{ id: 1, name: 'nobo1', age: '18' }, { id: 2, name: 'nobo2', age: '18' }, { id: 3, name: 'nobo3', age: '18' }, { id: 4, name: 'nobo4', age: '18' }, { id: 5, name: 'nobo5', age: '18' }, { id: 6, name: 'nobo6', age: '18' }, { id: 7, name: 'nobo7', age: '18' }, { id: 8, name: 'nobo8', age: '18' }, { id: 9, name: 'nobo9', age: '18' }];
 
+for(var i=0;i<5000;i++) {
+	data.push({ id: 20 + i, name: 'nobo1', age: '18' });	
+}
+
 Neact.render(Neact.createElement(Table, { columns: columns, data: data }), demo);

@@ -2,7 +2,7 @@ import json from 'rollup-plugin-json';
 import babel from 'rollup-plugin-babel';
 //https://github.com/rollup/rollup/blob/a9f342cb26d14ae8ee93a8f8f39f35dc968e3461/src/finalisers/umd.js#L83
 export default {
-    entry: 'src/Neact.js',
+    entry: 'src/neact.js',
     format: 'umd',
     moduleName: 'Neact',
     exports: 'named',

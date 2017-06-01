@@ -2,15 +2,15 @@
 import {
     addEventListener,
     removeEventListener
-} from './NeactDOMUtils';
+} from './domUtils';
 
 import {
     emptyVNode
-} from './NeactElement';
+} from './vnode';
 
 import {
     isObject
-} from './NeactUtils';
+} from './shared';
 
 function ename(s) {
     return s.replace('on', '');

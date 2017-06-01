@@ -1,19 +1,21 @@
 'use strict';
 import {
-    createElement as h,
     createTextVNode,
     createVoidVNode
-} from "../src/NeactElement";
+} from "../src/vnode";
+import {
+    createElement as h
+} from "../src/createElement";
 import {
     createClass
-} from "../src/NeactClass";
+} from "../src/createClass";
 import {
     mount,
     mountElement,
     mountComponent,
     mountText,
     mountVoid
-} from "../src/NeactMount";
+} from "../src/mount";
 
 describe('NeactMount', function() {
     var parentDom = document.createElement('div');

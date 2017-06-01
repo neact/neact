@@ -4,7 +4,7 @@ import {
     isString,
     isNumber,
     emptyObject
-} from '../NeactUtils';
+} from '../shared';
 
 import {
     isUnitlessNumber,
