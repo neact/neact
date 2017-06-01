@@ -419,6 +419,9 @@ function createElement(type, config) {
 }
 
 function cloneElement(element, config) {
+    if (!isVNode(element)) {
+        return element;
+    }
     if (isTextVNode(element)) {
         return createTextVNode(element.children);
     }
