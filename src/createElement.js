@@ -96,6 +96,9 @@ export function createElement(type, config, ..._children) {
 }
 
 export function cloneElement(element, config, ..._children) {
+    if (!isVNode(element)) {
+        return element;
+    }
     if (isTextVNode(element)) {
         return createTextVNode(element.children);
     }
