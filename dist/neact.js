@@ -2221,7 +2221,7 @@ var Children = {
     },
     only: function (children) {
         children = Children.toArray(children);
-        if (children.length !== 1) {
+        if (children.length !== 1 || !isVNode(children[0])) {
             throw new Error('Children.only() expects only one child.');
         }
         return children[0];

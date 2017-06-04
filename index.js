@@ -1,3 +1,3 @@
 'use strict';
 
-module.exports = require('./lib/Neact');
+module.exports = require('./lib/neact');
