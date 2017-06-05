@@ -64,7 +64,7 @@ const Children = {
     },
     only(children) {
         children = Children.toArray(children);
-        if (children.length !== 1) { throw new Error('Children.only() expects only one child.'); }
+        if (children.length !== 1 || !isValidElement(children[0])) { throw new Error('Children.only() expects only one child.'); }
         return children[0];
     },
     toArray
