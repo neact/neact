@@ -1421,22 +1421,20 @@ function patch(lastVNode, nextVNode, parentDom, callback, context, isSVG) {
     var isUndefCallbacks = isNullOrUndef(callback);
     callback = callback || new CallbackQueue();
 
-    if (lastVNode === nextVNode && lastVNode.context === context) {
-        return nextVNode;
-    }
+    //if (lastVNode === nextVNode) {
+    //    return nextVNode;
+    //}
 
-    if (lastVNode !== nextVNode) {
-        if (!isSameVNode(lastVNode, nextVNode)) {
-            replaceWithNewNode(lastVNode, nextVNode, parentDom, callback, context, isSVG);
-        } else if (isElementVNode(lastVNode)) {
-            patchElement(lastVNode, nextVNode, parentDom, callback, context, isSVG);
-        } else if (isComponentVNode(lastVNode)) {
-            patchComponent(lastVNode, nextVNode, parentDom, callback, context, isSVG);
-        } else if (isTextVNode(lastVNode)) {
-            patchText(lastVNode, nextVNode);
-        } else if (isVoidVNode(lastVNode)) {
-            patchVoid(lastVNode, nextVNode);
-        }
+    if (!isSameVNode(lastVNode, nextVNode)) {
+        replaceWithNewNode(lastVNode, nextVNode, parentDom, callback, context, isSVG);
+    } else if (isElementVNode(lastVNode)) {
+        patchElement(lastVNode, nextVNode, parentDom, callback, context, isSVG);
+    } else if (isComponentVNode(lastVNode)) {
+        patchComponent(lastVNode, nextVNode, parentDom, callback, context, isSVG);
+    } else if (isTextVNode(lastVNode)) {
+        patchText(lastVNode, nextVNode);
+    } else if (isVoidVNode(lastVNode)) {
+        patchVoid(lastVNode, nextVNode);
     }
 
     if (isUndefCallbacks) {
@@ -1489,9 +1487,9 @@ function patchElement(lastVNode, nextVNode, parentDom, callback, context, isSVG)
         dom.innerHTML = '';
     }
 
-    if (lastChildren !== nextChildren) {
-        patchChildren(lastChildren, nextChildren, dom, callback, context, isSVG);
-    }
+    //if (lastChildren !== nextChildren) {
+    patchChildren(lastChildren, nextChildren, dom, callback, context, isSVG);
+    //}
 
     //processElement(dom, nextVNode);
 
