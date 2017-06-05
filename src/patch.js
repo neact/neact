@@ -59,6 +59,10 @@ export function patch(lastVNode, nextVNode, parentDom, callback, context, isSVG)
     var isUndefCallbacks = isNullOrUndef(callback);
     callback = callback || new CallbackQueue();
 
+    if (lastVNode === nextVNode && lastVNode.context === context) {
+        return nextVNode;
+    }
+
     if (lastVNode !== nextVNode) {
         if (!isSameVNode(lastVNode, nextVNode)) {
             replaceWithNewNode(
@@ -288,14 +292,14 @@ function patchComponent(lastVNode, nextVNode, parentDom, callback, context, isSV
 
         nextChildren = inst._updateComponent(lastProps, nextProps, context);
 
-        childContext = inst.getChildContext();
-
+        childContext = inst._processChildContext(context);
+        /*
         if (!isNullOrUndef(childContext)) {
             childContext = assign({}, context, childContext);
         } else {
             childContext = context;
         }
-
+        */
         if (nextChildren !== emptyObject) {
             nextVNode.children = nextChildren;
             normalizeComponentChildren(nextVNode);

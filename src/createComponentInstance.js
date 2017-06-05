@@ -30,13 +30,14 @@ export default function createComponentInstance(vNode, context, isSVG) {
     inst._unmounted = false;
     inst._isSVG = isSVG;
 
-    const childContext = inst.getChildContext();
-
+    const childContext = inst._processChildContext(context);
+    inst._childContext = childContext;
+    /*
     if (!isNullOrUndef(childContext)) {
         inst._childContext = assign({}, context, childContext);
     } else {
         inst._childContext = context;
     }
-
+    */
     return inst;
 }

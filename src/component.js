@@ -55,7 +55,7 @@ function applyState(inst, callback) {
     const lastChildren = vNode.children;
     const props = inst.props;
     const context = inst.context;
-    let childContext = inst.getChildContext();
+    let childContext = inst._processChildContext(context);
     let nextChildren, shouldUpdate = false;
 
     nextChildren = inst._updateComponent(props, props, context);
@@ -72,13 +72,14 @@ function applyState(inst, callback) {
         if (hooks.beforeUpdate) {
             hooks.beforeUpdate(vNode, vNode);
         }
-
+        inst._childContext = childContext;
+        /*
         if (!isNullOrUndef(childContext)) {
             childContext = assign({}, context, inst._childContext, childContext);
         } else {
             childContext = assign({}, context, inst._childContext);
         }
-
+        */
         let callbacks = inst._callbacks;
 
         patch(lastChildren, nextChildren, parentDom, callbacks, childContext, inst._isSVG);
@@ -179,6 +180,21 @@ assign(Component.prototype, {
     },
 
     getChildContext() {},
+
+    _processChildContext(currentContext) {
+        const inst = this;
+        var childContext;
+
+        if (inst.getChildContext) {
+            childContext = inst.getChildContext();
+        }
+
+        if (childContext) {
+            return assign({}, currentContext, childContext);
+        }
+
+        return currentContext;
+    },
 
     _updateComponent(prevProps, nextProps, context) {
         const inst = this;
