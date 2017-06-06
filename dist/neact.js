@@ -2078,15 +2078,16 @@ assign(Component.prototype, {
             throwError();
         }
 
-        var willReceive = false;
+        //let willReceive = false;
         var children = emptyObject;
         var shouldUpdate = true;
 
-        if (prevProps !== nextProps) {
-            willReceive = true;
-        }
+        //if (prevProps !== nextProps) {
+        //    willReceive = true;
+        //}
 
-        if (willReceive && inst.componentWillReceiveProps) {
+        if (inst.componentWillReceiveProps) {
+            //willReceive && 
             inst._pendingSetState = true;
             inst.componentWillReceiveProps(nextProps, context);
             inst._pendingSetState = false;
