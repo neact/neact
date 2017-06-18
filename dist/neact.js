@@ -886,8 +886,6 @@ function createComponentInstance(vNode, context, isSVG) {
     return inst;
 }
 
-var processDOMPropertyHooks = {};
-
 var canUseDOM = !!(typeof window !== 'undefined' && window.document && window.document.createElement);
 
 
@@ -1027,7 +1025,7 @@ function setNextFrame(obj, prop, val) {
     });
 }
 
-var processDOMStyle = function (lastValue, nextValue, prop, isSVG, dom, vNode) {
+var updateDOMStyle = function (lastValue, nextValue, dom) {
     if (lastValue === nextValue) {
         return;
     }
@@ -1087,7 +1085,7 @@ var processDOMStyle = function (lastValue, nextValue, prop, isSVG, dom, vNode) {
 };
 
 function dangerousStyleValue(name, value) {
-    var isEmpty = value == null || typeof value === 'boolean' || value === '';
+    var isEmpty = value === null || typeof value === 'boolean' || value === '';
     if (isEmpty) {
         return '';
     }
@@ -1103,32 +1101,63 @@ function dangerousStyleValue(name, value) {
     return value + 'px';
 }
 
-var processDOMAttr = function (lastValue, nextValue, prop, isSVG, dom, vNode) {
-    if (lastValue === nextValue) {
+function createDOMProperty(props, isSVG, vNode) {
+    processDOMProperty(null, props, isSVG, vNode);
+}
+
+function processDOMProperty(lastProps, nextProps, isSVG, vNode) {
+    if (lastProps === nextProps) {
         return;
     }
+
+    var dom = vNode.dom;
+
+    lastProps = lastProps || emptyObject;
+    nextProps = nextProps || emptyObject;
+
+    if (nextProps !== emptyObject) {
+        for (var prop in nextProps) {
+            var nextValue = isNullOrUndef(nextProps[prop]) ? null : nextProps[prop];
+            var lastValue = isNullOrUndef(lastProps[prop]) ? null : lastProps[prop];
+            console.log(prop);
+            updateDOMProperty(lastValue, nextValue, prop, isSVG, dom, vNode);
+        }
+    }
+    if (lastProps !== emptyObject) {
+        for (var _prop in lastProps) {
+            if (isNullOrUndef(nextProps[_prop])) {
+                var _lastValue = isNullOrUndef(lastProps[_prop]) ? null : lastProps[_prop];
+                console.log(_prop);
+                updateDOMProperty(_lastValue, null, _prop, isSVG, dom, vNode);
+            }
+        }
+    }
+}
+
+function updateDOMProperty(lastValue, nextValue, prop, isSVG, dom, vNode) {
     if (skipProps[prop]) {
         return;
     }
+
+    if (prop === 'className') {
+        prop = 'class';
+    }
+
     if (booleanProps[prop]) {
         dom[prop] = nextValue ? true : false;
+    } else if (name === 'class' && !isSVG) {
+        dom.className = nextValue || '';
     } else if (strictProps[prop]) {
         var value = isNullOrUndef(nextValue) ? '' : nextValue;
 
         if (dom[prop] !== value) {
             dom[prop] = value;
         }
-    } else {
-        if (isNullOrUndef(nextValue) && prop !== 'dangerouslySetInnerHTML') {
+    } else if (lastValue !== nextValue) {
+        if (isNullOrUndef(nextValue)) {
             dom.removeAttribute(prop);
-        } else if (prop === 'htmlFor') {
-            dom.setAttribute('for', nextValue);
-        } else if (prop === 'className') {
-            if (isSVG) {
-                dom.setAttribute('class', nextValue);
-            } else {
-                dom.className = nextValue;
-            }
+        } else if (prop === 'style') {
+            updateDOMStyle(lastValue, nextValue, dom);
         } else if (prop === 'dangerouslySetInnerHTML') {
             var lastHtml = lastValue && lastValue.__html;
             var nextHtml = nextValue && nextValue.__html;
@@ -1154,45 +1183,6 @@ var processDOMAttr = function (lastValue, nextValue, prop, isSVG, dom, vNode) {
                 dom.setAttributeNS(ns, dehyphenProp, nextValue);
             } else {
                 dom.setAttribute(dehyphenProp, nextValue);
-            }
-        }
-    }
-};
-
-var propertyHooks = assign({
-    style: processDOMStyle,
-    __default__: processDOMAttr
-}, processDOMPropertyHooks);
-
-function createDOMProperty(props, isSVG, vNode) {
-    updateDOMProperty(null, props, isSVG, vNode);
-}
-
-function updateDOMProperty(lastProps, nextProps, isSVG, vNode) {
-    if (lastProps === nextProps) {
-        return;
-    }
-
-    var dom = vNode.dom;
-
-    lastProps = lastProps || emptyObject;
-    nextProps = nextProps || emptyObject;
-
-    if (nextProps !== emptyObject) {
-        for (var prop in nextProps) {
-            // do not add a hasOwnProperty check here, it affects performance
-            var nextValue = isNullOrUndef(nextProps[prop]) ? null : nextProps[prop];
-            var lastValue = isNullOrUndef(lastProps[prop]) ? null : lastProps[prop];
-            var hook = propertyHooks[prop] ? prop : '__default__';
-            propertyHooks[hook](lastValue, nextValue, prop, isSVG, dom, vNode);
-        }
-    }
-    if (lastProps !== emptyObject) {
-        for (var _prop in lastProps) {
-            if (isNullOrUndef(nextProps[_prop])) {
-                var _lastValue = isNullOrUndef(lastProps[_prop]) ? null : lastProps[_prop];
-                var _hook = propertyHooks[_prop] ? _prop : '__default__';
-                propertyHooks[_hook](_lastValue, null, _prop, isSVG, dom, vNode);
             }
         }
     }
@@ -1493,7 +1483,7 @@ function patchElement(lastVNode, nextVNode, parentDom, callback, context, isSVG)
 
     //processElement(dom, nextVNode);
 
-    updateDOMProperty(lastVNode.props, nextVNode.props, isSVG, nextVNode);
+    processDOMProperty(lastVNode.props, nextVNode.props, isSVG, nextVNode);
     updateDOMEvents(lastVNode, nextVNode);
 
     if (!isNull(nextVNode.ref)) {
@@ -2259,7 +2249,6 @@ exports.createVNode = createVNode;
 exports.createTextVNode = createTextVNode;
 exports.cloneElement = cloneElement;
 exports.isValidElement = isVNode;
-exports.processDOMPropertyHooks = processDOMPropertyHooks;
 exports.createClass = createClass;
 exports.Component = Component;
 exports.PureComponent = PureComponent;
