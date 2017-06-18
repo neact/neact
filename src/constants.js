@@ -2,7 +2,7 @@
 
 import {
     canUseDOM
-} from '../support';
+} from './support';
 
 function constructDefaults(string, object, value) {
     var r = string.split(',');

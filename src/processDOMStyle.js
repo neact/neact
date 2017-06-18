@@ -4,7 +4,7 @@ import {
     isString,
     isNumber,
     emptyObject
-} from '../shared';
+} from './shared';
 
 import {
     isUnitlessNumber,
@@ -20,7 +20,7 @@ function setNextFrame(obj, prop, val) {
     nextFrame(function() { obj[prop] = val; });
 }
 
-export default function(lastValue, nextValue, prop, isSVG, dom, vNode) {
+export default function(lastValue, nextValue, dom) {
     if (lastValue === nextValue) { return; }
     if (isString(nextValue)) {
         dom.style.cssText = nextValue;
@@ -75,7 +75,7 @@ export default function(lastValue, nextValue, prop, isSVG, dom, vNode) {
 
 
 function dangerousStyleValue(name, value) {
-    var isEmpty = value == null || typeof value === 'boolean' || value === '';
+    var isEmpty = value === null || typeof value === 'boolean' || value === '';
     if (isEmpty) {
         return '';
     }

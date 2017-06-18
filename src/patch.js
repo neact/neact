@@ -46,7 +46,7 @@ import {
 import CallbackQueue from './callbackQueue';
 
 import {
-    updateDOMProperty
+    processDOMProperty
 } from './processDOMProperty';
 
 import {
@@ -139,7 +139,7 @@ function patchElement(lastVNode, nextVNode, parentDom, callback, context, isSVG)
 
     //processElement(dom, nextVNode);
 
-    updateDOMProperty(lastVNode.props, nextVNode.props, isSVG, nextVNode);
+    processDOMProperty(lastVNode.props, nextVNode.props, isSVG, nextVNode);
     updateDOMEvents(lastVNode, nextVNode);
 
     if (!isNull(nextVNode.ref)) {

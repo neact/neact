@@ -7,8 +7,6 @@ import {
     _patch as patch
 } from './render';
 
-import processDOMPropertyHooks from './processDOMPropertyHooks';
-
 import {
     createVNode,
     createTextVNode
@@ -81,7 +79,6 @@ export {
     createTextVNode,
     cloneElement,
     isValidElement,
-    processDOMPropertyHooks,
     createClass,
     Component,
     PureComponent,
