@@ -42,7 +42,6 @@ export function processDOMProperty(lastProps, nextProps, isSVG, vNode) {
         for (let prop in nextProps) {
             const nextValue = isNullOrUndef(nextProps[prop]) ? null : nextProps[prop];
             const lastValue = isNullOrUndef(lastProps[prop]) ? null : lastProps[prop];
-            console.log(prop)
             updateDOMProperty(lastValue, nextValue, prop, isSVG, dom, vNode);
         }
     }
@@ -50,7 +49,6 @@ export function processDOMProperty(lastProps, nextProps, isSVG, vNode) {
         for (let prop in lastProps) {
             if (isNullOrUndef(nextProps[prop])) {
                 const lastValue = isNullOrUndef(lastProps[prop]) ? null : lastProps[prop];
-                console.log(prop)
                 updateDOMProperty(lastValue, null, prop, isSVG, dom, vNode);
             }
         }
