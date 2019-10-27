@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 import {
     isUndefined,
@@ -19,49 +19,71 @@ import {
     emptyObject,
     throwError,
     assign
-} from './shared';
+} from "./shared";
 
+import { mount, mountArrayChildren, normalizeComponentChildren } from "./mount";
 
-import {
-    mount,
-    mountArrayChildren,
-    normalizeComponentChildren
-} from './mount';
-
-import { unmount } from './unmount';
+import { unmount } from "./unmount";
 
 import {
     insertBefore,
     nextSibling,
     replaceWithNewNode,
     setTextContent
-} from './domUtils';
+} from "./domUtils";
 
-import {
-    shouldUpdateRefs,
-    attachRef,
-    detachRef
-} from './refs';
+import { shouldUpdateRefs, attachRef, detachRef } from "./refs";
 
-import CallbackQueue from './callbackQueue';
+import CallbackQueue from "./callbackQueue";
 
-import {
-    processDOMProperty
-} from './processDOMProperty';
+import { processDOMProperty } from "./processDOMProperty";
 
-import {
-    updateDOMEvents
-} from './processDOMEvents';
+import { updateDOMEvents } from "./processDOMEvents";
 
 //import processElement from './processElement';
 
-export function patch(lastVNode, nextVNode, parentDom, callback, context, isSVG) {
+export function patch(
+    lastVNode,
+    nextVNode,
+    parentDom,
+    callback,
+    context,
+    isSVG
+) {
     var isUndefCallbacks = isNullOrUndef(callback);
     callback = callback || new CallbackQueue();
 
-    //if (lastVNode === nextVNode) {
-    //    return nextVNode;
-    //}
+    // 以下判断在React存在的，但这里我注释了，因为我认为在某些特殊场景下会导致不刷新，如果注释的情况下，场景示例:
+    // function Test(){
+    //     console.log('Test Render');
+    //     return null;
+    // }
+    // class T1 extends React.Component {
+    //     componentDidMount() {
+    //         setInterval(() => this.setState({}), 1000);
+    //     }
+    //     render() {
+    //         return <div>{this.props.children}</div>;
+    //     }
+    // }
+    // class T2 extends React.Component {
+    //     componentDidMount() {
+    //         setInterval(() => this.setState({}), 1000);
+    //     }
+    //     render() {
+    //         return <div><Test /></div>;
+    //     }
+    // }
+    // 这里的Test只会输出一次Test Render
+    // <T1><Test /></T1>
+    // 每隔一秒输出一次Test Render
+    // <T2 />
+    // 注释后则两者的无区别，由于这是类React库，所以添加了个人喜好，基于React开发的应用时请注意，也提醒自己
+    // 同时也放开注释，保持和React一致，如果需要实现之前注释的功能需要使用 cloneElement 复制一份，从而保证他们不再相等
+    // 2019.10.28
+    if (lastVNode === nextVNode) {
+        return nextVNode;
+    }
 
     if (!isSameVNode(lastVNode, nextVNode)) {
         replaceWithNewNode(
@@ -75,7 +97,14 @@ export function patch(lastVNode, nextVNode, parentDom, callback, context, isSVG)
     } else if (isElementVNode(lastVNode)) {
         patchElement(lastVNode, nextVNode, parentDom, callback, context, isSVG);
     } else if (isComponentVNode(lastVNode)) {
-        patchComponent(lastVNode, nextVNode, parentDom, callback, context, isSVG);
+        patchComponent(
+            lastVNode,
+            nextVNode,
+            parentDom,
+            callback,
+            context,
+            isSVG
+        );
     } else if (isTextVNode(lastVNode)) {
         patchText(lastVNode, nextVNode);
     } else if (isVoidVNode(lastVNode)) {
@@ -89,7 +118,6 @@ export function patch(lastVNode, nextVNode, parentDom, callback, context, isSVG)
     return nextVNode;
 }
 
-
 function unmountChildren(children, dom) {
     if (isVNode(children)) {
         unmount(children, dom);
@@ -102,11 +130,18 @@ function unmountChildren(children, dom) {
             }
         }
     } else {
-        setTextContent(dom, '');
+        setTextContent(dom, "");
     }
 }
 
-function patchElement(lastVNode, nextVNode, parentDom, callback, context, isSVG) {
+function patchElement(
+    lastVNode,
+    nextVNode,
+    parentDom,
+    callback,
+    context,
+    isSVG
+) {
     const dom = lastVNode.dom;
     const hooks = nextVNode.hooks || {};
     const lastProps = lastVNode.props;
@@ -115,8 +150,14 @@ function patchElement(lastVNode, nextVNode, parentDom, callback, context, isSVG)
     const nextChildren = nextVNode.children;
     const lastEvents = lastVNode.events;
     const nextEvents = nextVNode.events;
-    const lastHtml = lastProps && lastProps.dangerouslySetInnerHTML && lastProps.dangerouslySetInnerHTML.__html;
-    const nextHtml = nextProps && nextProps.dangerouslySetInnerHTML && nextProps.dangerouslySetInnerHTML.__html;
+    const lastHtml =
+        lastProps &&
+        lastProps.dangerouslySetInnerHTML &&
+        lastProps.dangerouslySetInnerHTML.__html;
+    const nextHtml =
+        nextProps &&
+        nextProps.dangerouslySetInnerHTML &&
+        nextProps.dangerouslySetInnerHTML.__html;
 
     nextVNode.dom = dom;
 
@@ -130,7 +171,7 @@ function patchElement(lastVNode, nextVNode, parentDom, callback, context, isSVG)
     }
 
     if (!isNullOrUndef(lastHtml) && isNullOrUndef(nextHtml)) {
-        dom.innerHTML = '';
+        dom.innerHTML = "";
     }
 
     //if (lastChildren !== nextChildren) {
@@ -149,10 +190,16 @@ function patchElement(lastVNode, nextVNode, parentDom, callback, context, isSVG)
     if (hooks.update) {
         callback.enqueue(() => hooks.update(nextVNode));
     }
-
 }
 
-function patchChildren(lastChildren, nextChildren, dom, callback, context, isSVG) {
+function patchChildren(
+    lastChildren,
+    nextChildren,
+    dom,
+    callback,
+    context,
+    isSVG
+) {
     if (isInvalid(nextChildren)) {
         unmountChildren(lastChildren, dom, callback);
     } else if (isInvalid(lastChildren)) {
@@ -164,18 +211,26 @@ function patchChildren(lastChildren, nextChildren, dom, callback, context, isSVG
     } else if (!isArray(lastChildren) && !isArray(nextChildren)) {
         patch(lastChildren, nextChildren, dom, callback, context, isSVG);
     } else {
-        updateChildren(toArray(lastChildren), toArray(nextChildren), dom, callback, context, isSVG);
+        updateChildren(
+            toArray(lastChildren),
+            toArray(nextChildren),
+            dom,
+            callback,
+            context,
+            isSVG
+        );
     }
 }
 
 function createKeyToOldIdx(children, beginIdx, endIdx) {
-    var i, map = {},
+    var i,
+        map = {},
         key;
     for (i = beginIdx; i <= endIdx; ++i) {
         key = children[i].key;
         if (!isNullOrUndef(key)) {
             if (isDefined(map[key])) {
-                throwError('key must be unique.');
+                throwError("key must be unique.");
             }
             map[key] = i;
         }
@@ -202,51 +257,104 @@ function updateChildren(oldCh, newCh, parentElm, callback, context, isSVG) {
         } else if (isUndefined(oldEndVnode)) {
             oldEndVnode = oldCh[--oldEndIdx];
         } else if (isSameVNode(oldStartVnode, newStartVnode)) {
-            patch(oldStartVnode, newStartVnode, parentElm, callback, context, isSVG);
+            patch(
+                oldStartVnode,
+                newStartVnode,
+                parentElm,
+                callback,
+                context,
+                isSVG
+            );
             oldStartVnode = oldCh[++oldStartIdx];
             newStartVnode = newCh[++newStartIdx];
         } else if (isSameVNode(oldEndVnode, newEndVnode)) {
-            patch(oldEndVnode, newEndVnode, parentElm, callback, context, isSVG);
+            patch(
+                oldEndVnode,
+                newEndVnode,
+                parentElm,
+                callback,
+                context,
+                isSVG
+            );
             oldEndVnode = oldCh[--oldEndIdx];
             newEndVnode = newCh[--newEndIdx];
-        } else if (isSameVNode(oldStartVnode, newEndVnode)) { // Vnode moved right
-            insertBefore(parentElm, oldStartVnode.dom, nextSibling(oldEndVnode.dom));
-            patch(oldStartVnode, newEndVnode, parentElm, callback, context, isSVG);
+        } else if (isSameVNode(oldStartVnode, newEndVnode)) {
+            // Vnode moved right
+            insertBefore(
+                parentElm,
+                oldStartVnode.dom,
+                nextSibling(oldEndVnode.dom)
+            );
+            patch(
+                oldStartVnode,
+                newEndVnode,
+                parentElm,
+                callback,
+                context,
+                isSVG
+            );
             oldStartVnode = oldCh[++oldStartIdx];
             newEndVnode = newCh[--newEndIdx];
-        } else if (isSameVNode(oldEndVnode, newStartVnode)) { // Vnode moved left
+        } else if (isSameVNode(oldEndVnode, newStartVnode)) {
+            // Vnode moved left
             insertBefore(parentElm, oldEndVnode.dom, oldStartVnode.dom);
-            patch(oldEndVnode, newStartVnode, parentElm, callback, context, isSVG);
+            patch(
+                oldEndVnode,
+                newStartVnode,
+                parentElm,
+                callback,
+                context,
+                isSVG
+            );
             oldEndVnode = oldCh[--oldEndIdx];
             newStartVnode = newCh[++newStartIdx];
         } else {
-            if (isUndefined(oldKeyToIdx)) { oldKeyToIdx = createKeyToOldIdx(oldCh, oldStartIdx, oldEndIdx); }
+            if (isUndefined(oldKeyToIdx)) {
+                oldKeyToIdx = createKeyToOldIdx(oldCh, oldStartIdx, oldEndIdx);
+            }
 
             idxInOld = oldKeyToIdx[newStartVnode.key];
 
-            if (isUndefined(idxInOld) || isUndefined(oldCh[idxInOld])) { // New element
-                var dom = mount(newCh[newStartIdx], null, callback, context, isSVG);
+            if (isUndefined(idxInOld) || isUndefined(oldCh[idxInOld])) {
+                // New element
+                var dom = mount(
+                    newCh[newStartIdx],
+                    null,
+                    callback,
+                    context,
+                    isSVG
+                );
                 insertBefore(parentElm, dom, oldStartVnode.dom);
                 newStartVnode = newCh[++newStartIdx];
             } else {
                 elmToMove = oldCh[idxInOld];
                 insertBefore(parentElm, elmToMove.dom, oldStartVnode.dom);
-                patch(elmToMove, newStartVnode, parentElm, callback, context, isSVG);
+                patch(
+                    elmToMove,
+                    newStartVnode,
+                    parentElm,
+                    callback,
+                    context,
+                    isSVG
+                );
                 oldCh[idxInOld] = undefined;
                 newStartVnode = newCh[++newStartIdx];
             }
         }
     }
 
-    if (oldStartIdx > oldEndIdx) { // New element
-        before = isUndefined(newCh[newEndIdx + 1]) ? null : newCh[newEndIdx + 1].dom;
+    if (oldStartIdx > oldEndIdx) {
+        // New element
+        before = isUndefined(newCh[newEndIdx + 1])
+            ? null
+            : newCh[newEndIdx + 1].dom;
         for (; newStartIdx <= newEndIdx; newStartIdx++) {
             var dom = mount(newCh[newStartIdx], null, callback, context, isSVG);
             insertBefore(parentElm, dom, before);
         }
-    } else if (newStartIdx > newEndIdx) { // Remove element
+    } else if (newStartIdx > newEndIdx) {
+        // Remove element
         for (; oldStartIdx <= oldEndIdx; oldStartIdx++) {
-
             if (isDefined(oldCh[oldStartIdx])) {
                 unmount(oldCh[oldStartIdx], parentElm);
             }
@@ -269,7 +377,14 @@ function patchVoid(lastVNode, nextVNode) {
     nextVNode.dom = lastVNode.dom;
 }
 
-function patchComponent(lastVNode, nextVNode, parentDom, callback, context, isSVG) {
+function patchComponent(
+    lastVNode,
+    nextVNode,
+    parentDom,
+    callback,
+    context,
+    isSVG
+) {
     const nextType = nextVNode.type;
     const nextProps = nextVNode.props;
     const isClass = isStatefulComponent(nextType);
@@ -281,7 +396,9 @@ function patchComponent(lastVNode, nextVNode, parentDom, callback, context, isSV
         const lastProps = inst.props;
         const lastState = inst.state;
         const lastContext = inst.context;
-        let nextChildren, childContext, shouldUpdate = false;
+        let nextChildren,
+            childContext,
+            shouldUpdate = false;
 
         nextVNode.dom = lastVNode.dom;
         nextVNode.children = lastChildren;
@@ -310,7 +427,6 @@ function patchComponent(lastVNode, nextVNode, parentDom, callback, context, isSV
         //inst._renderedVNode = nextChildren;
 
         if (shouldUpdate) {
-
             if (hooks.beforeUpdate) {
                 hooks.beforeUpdate(lastVNode, nextVNode);
             }
@@ -320,7 +436,14 @@ function patchComponent(lastVNode, nextVNode, parentDom, callback, context, isSV
                 detachRef(lastVNode);
             }
 
-            patch(lastChildren, nextChildren, parentDom, callback, childContext, isSVG);
+            patch(
+                lastChildren,
+                nextChildren,
+                parentDom,
+                callback,
+                childContext,
+                isSVG
+            );
             nextVNode.dom = nextChildren.dom;
 
             if (!isNull(nextVNode.ref)) {
@@ -328,7 +451,14 @@ function patchComponent(lastVNode, nextVNode, parentDom, callback, context, isSV
             }
 
             if (inst.componentDidUpdate) {
-                callback.enqueue(() => inst.componentDidUpdate(lastProps, lastState, lastContext, nextVNode.dom));
+                callback.enqueue(() =>
+                    inst.componentDidUpdate(
+                        lastProps,
+                        lastState,
+                        lastContext,
+                        nextVNode.dom
+                    )
+                );
             }
 
             if (!isNullOrUndef(hooks.update)) {
@@ -349,7 +479,11 @@ function patchComponent(lastVNode, nextVNode, parentDom, callback, context, isSV
         nextVNode.children = nextChildren;
 
         if (!isNullOrUndef(nextProps.onComponentShouldUpdate)) {
-            shouldUpdate = nextProps.onComponentShouldUpdate(lastProps, nextProps, context);
+            shouldUpdate = nextProps.onComponentShouldUpdate(
+                lastProps,
+                nextProps,
+                context
+            );
         }
 
         if (shouldUpdate !== false) {
@@ -359,7 +493,11 @@ function patchComponent(lastVNode, nextVNode, parentDom, callback, context, isSV
             }
 
             if (!isNullOrUndef(nextProps.onComponentWillUpdate)) {
-                nextProps.onComponentWillUpdate(lastProps, nextProps, nextVNode);
+                nextProps.onComponentWillUpdate(
+                    lastProps,
+                    nextProps,
+                    nextVNode
+                );
             }
             nextVNode.children = nextType(nextProps, context);
 
@@ -371,7 +509,14 @@ function patchComponent(lastVNode, nextVNode, parentDom, callback, context, isSV
                 hooks.beforeUpdate(lastVNode, nextVNode);
             }
 
-            patch(lastChildren, nextChildren, parentDom, callback, context, isSVG);
+            patch(
+                lastChildren,
+                nextChildren,
+                parentDom,
+                callback,
+                context,
+                isSVG
+            );
             nextVNode.dom = nextChildren.dom;
 
             if (!isNull(nextVNode.ref)) {
@@ -379,7 +524,9 @@ function patchComponent(lastVNode, nextVNode, parentDom, callback, context, isSV
             }
 
             if (!isNullOrUndef(nextProps.onComponentDidUpdate)) {
-                callback.enqueue(() => nextProps.onComponentDidUpdate(nextVNode));
+                callback.enqueue(() =>
+                    nextProps.onComponentDidUpdate(nextVNode)
+                );
             }
 
             if (!isNullOrUndef(hooks.update)) {
