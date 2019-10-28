@@ -82,6 +82,7 @@ export function patch(
     // 同时也放开注释，保持和React一致，如果需要实现之前注释的功能需要使用 cloneElement 复制一份，从而保证他们不再相等
     // 2019.10.28
     if (lastVNode === nextVNode) {
+        // && lastVNode.context === context
         return nextVNode;
     }
 
